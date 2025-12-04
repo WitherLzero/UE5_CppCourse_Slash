@@ -30,5 +30,14 @@ void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+	UE_LOG(LogTemp, Warning, TEXT("Delta Time: %f"),DeltaTime);
+	
+	FString Name = GetName();
+	FString Message = FString::Printf(TEXT("Item Name: %s"),*Name);  // use * to get the c-style array
+
+	if(GEngine){
+		GEngine->AddOnScreenDebugMessage(2,60.f,FColor::Blue,Message);
+	}
+
 }
 
