@@ -6,6 +6,7 @@
 
 // Sets default values
 AItem::AItem()
+	: RunningTime(0.f), Amplitude(0.5f), TimeConstant(2.f) 
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -13,13 +14,13 @@ AItem::AItem()
 }
 
 // Called when the game starts or when spawned
-void AItem::BeginPlay()
+void AItem::BeginPlay() 
 {
 	Super::BeginPlay();
 	
 	UWorld* World = GetWorld(); // Get the world pointer that this actor is in
 	
-	SetActorLocation(FVector(0.f, 0.f,50.f));
+	SetActorLocation(FVector(0.f, 0.f,100.f));
 	SetActorRotation(FRotator(0.f,45.f,0.f));
 	
 }
@@ -29,9 +30,11 @@ void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	float MovementSpeed = 50.f;
+	RunningTime += DeltaTime;
 	float RotationSpeed = 45.f;
-	AddActorWorldOffset(FVector(MovementSpeed * DeltaTime, 0.f, 0.f));
+	float DeltaZ = Amplitude * FMath::Sin(RunningTime * TimeConstant);
+	
+	AddActorWorldOffset(FVector(0.f, 0.f, DeltaZ));
 	AddActorLocalRotation(FRotator(RotationSpeed*DeltaTime,0.f,0.f));
 	
 	DRAW_SPHERE_PerFrame(GetActorLocation());
