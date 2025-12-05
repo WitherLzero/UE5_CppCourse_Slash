@@ -23,15 +23,10 @@ void AItem::BeginPlay()
 	FVector Location = GetActorLocation();
 	FVector Forward = GetActorForwardVector();
 	
-	if (World)
-	{
-		DrawDebugPoint(World, Location, 10.f, FColor::Blue, true);		
-	}
 	
 	// use macro to draw 
 	DRAW_SPHERE(Location);
-	DRAW_LINE(Location, Location + Forward * 100.f);
-	DRAW_POINT(Location + Forward * 100.f);
+	DRAW_VECTOR(Location, Location + Forward * 100.f);
 }
 
 // Called every frame
