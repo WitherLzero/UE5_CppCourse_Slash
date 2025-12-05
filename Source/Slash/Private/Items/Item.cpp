@@ -21,19 +21,21 @@ void AItem::BeginPlay()
 	
 	SetActorLocation(FVector(0.f, 0.f,50.f));
 	SetActorRotation(FRotator(0.f,45.f,0.f));
-	FVector Location = GetActorLocation();
-	FVector Forward = GetActorForwardVector();
 	
-	
-	// use macro to draw 
-	DRAW_SPHERE(Location);
-	DRAW_VECTOR(Location, Location + Forward * 100.f);
 }
 
 // Called every frame
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	float MovementSpeed = 50.f;
+	float RotationSpeed = 45.f;
+	AddActorWorldOffset(FVector(MovementSpeed * DeltaTime, 0.f, 0.f));
+	AddActorLocalRotation(FRotator(RotationSpeed*DeltaTime,0.f,0.f));
+	
+	DRAW_SPHERE_PerFrame(GetActorLocation());
+	DRAW_VECTOR_PerFrame(GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 100.f);
 
 }
 
