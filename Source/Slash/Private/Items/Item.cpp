@@ -18,6 +18,9 @@ void AItem::BeginPlay()
 	Super::BeginPlay();
 	
 	UWorld* World = GetWorld(); // Get the world pointer that this actor is in
+	
+	SetActorLocation(FVector(0.f, 0.f,50.f));
+	SetActorRotation(FRotator(0.f,45.f,0.f));
 	FVector Location = GetActorLocation();
 	FVector Forward = GetActorForwardVector();
 	

@@ -31,6 +31,9 @@ Developers/
 __ExternalActors__/
 __ExternalObjects__/
 
+# AI
+.agent/
+
 # Local builds
 Builds/
 
