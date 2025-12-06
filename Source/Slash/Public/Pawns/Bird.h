@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "Components/CapsuleComponent.h"
 #include "Bird.generated.h"
 
+class UcapsuleComponent;
 
 UCLASS()
 class SLASH_API ABird : public APawn
