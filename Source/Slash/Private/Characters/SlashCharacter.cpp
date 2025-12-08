@@ -45,7 +45,11 @@ void ASlashCharacter::Move(const FInputActionValue& Value)
 	const FVector2D MoveAxis = Value.Get<FVector2D>();
 	if (GetController())
 	{
+		const FVector Forward = GetActorForwardVector();
+		AddMovementInput(Forward,MoveAxis.Y);
 		
+		const FVector Right = GetActorRightVector();
+		AddMovementInput(Right,MoveAxis.X);
 	}
 }
 
