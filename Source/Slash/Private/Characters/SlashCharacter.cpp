@@ -5,6 +5,7 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -14,6 +15,12 @@ ASlashCharacter::ASlashCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+	bUseControllerRotationYaw = false;
+	
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(GetRootComponent());
@@ -45,10 +52,11 @@ void ASlashCharacter::Move(const FInputActionValue& Value)
 	const FVector2D MoveAxis = Value.Get<FVector2D>();
 	if (GetController())
 	{
-		const FVector Forward = GetActorForwardVector();
+		const FRotator YawRotation(0.f,GetControlRotation().Yaw,0.f);
+		const FVector Forward = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Forward,MoveAxis.Y);
 		
-		const FVector Right = GetActorRightVector();
+		const FVector Right = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Right,MoveAxis.X);
 	}
 }
