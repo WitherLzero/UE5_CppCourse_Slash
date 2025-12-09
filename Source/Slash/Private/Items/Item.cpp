@@ -34,22 +34,22 @@ float AItem::TransformedCosine() const
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	const FString OverlapActorName = OtherActor->GetName();
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(1,30.f,FColor::Red,
-		FString::Printf(TEXT("Overlap Actor Name: %s"),*OverlapActorName));
+		const FString ThisActorName = GetName();
+		GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Red, FString::Printf(TEXT("Item Overlap Message From: %s"), *ThisActorName));
+		GEngine->AddOnScreenDebugMessage(2, 5.f, FColor::Red, TEXT("Item::OnSphereOverlap hasn't been Overridden in child class!"));
 	}
 }
 
-void AItem::OnTestSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	const FString EndOverlapCompName = OtherComp->GetName();
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(2, 30.f, FColor::Red,
-			FString::Printf(TEXT("End Overlap Comp Name: %s"), *EndOverlapCompName));
+		const FString ThisActorName = GetName();
+		GEngine->AddOnScreenDebugMessage(3, 5.f, FColor::Red, FString::Printf(TEXT("Item End Overlap Message From: %s"), *ThisActorName));
+		GEngine->AddOnScreenDebugMessage(4, 5.f, FColor::Red, TEXT("Item::OnSphereEndOverlap hasn't been Overridden in child class!"));
 	}
 }
 
@@ -61,7 +61,7 @@ void AItem::BeginPlay()
 	// Bind the callback to the delegate
 	Sphere->SetGenerateOverlapEvents(true);
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
-	Sphere->OnComponentEndOverlap.AddDynamic(this, &AItem::OnTestSphereEndOverlap);
+	Sphere->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
 	
 }
 
