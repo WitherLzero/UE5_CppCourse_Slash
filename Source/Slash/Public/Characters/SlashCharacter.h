@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "SlashCharacter.generated.h"
 
+class AWeapon;
 class AItem;
 class UCameraComponent;
 class USpringArmComponent;
@@ -54,12 +55,15 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	virtual void Jump() override;
-	void Interact();
+	void EKeyPressed();
 	void Attack();
 
 	/* Play Montage Functions */
 	void PlayAttackMontage();
 
+	void PlayEquipMontage(FName SectionName);
+	
+	// Functions for Attack Notify
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
 
@@ -96,12 +100,28 @@ private:
 	// Interactables
 	UPROPERTY(VisibleInstanceOnly)
 	AItem* OverlappingItem;
+	void InteractWithItem();
+	
+	// Weapon
+	UPROPERTY(VisibleInstanceOnly)
+	AWeapon* EquippedWeapon;
+	void EquipWeapon();
+
+	FORCEINLINE bool CanArm() const { return ActionState == EActionState::EAS_Unoccupied && 
+			CharacterState == ECharacterState::ECS_Unequipped && EquippedWeapon; }
+
+	FORCEINLINE bool CanDisarm() const { return ActionState == EActionState::EAS_Unoccupied &&
+			CharacterState == ECharacterState::ECS_Equipped;}
 	
 	// Animation montages
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	UAnimMontage* AttackMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* EquipMontage;
 public:
-	FORCEINLINE void SetOverlappingItem(AItem* NewItem) { OverlappingItem = NewItem; }
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
 	FORCEINLINE void SetCharacterState(ECharacterState NewState) { CharacterState = NewState; }
+	FORCEINLINE void SetOverlappingItem(AItem* NewItem) { OverlappingItem = NewItem; }
+	FORCEINLINE void SetWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }
 };

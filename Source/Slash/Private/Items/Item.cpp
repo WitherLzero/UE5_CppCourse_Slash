@@ -39,12 +39,6 @@ void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 	{
 		OverlappingCharacter->SetOverlappingItem(this);
 	}
-	// if (GEngine)
-	// {
-	// 	const FString ThisActorName = GetName();
-	// 	GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Red, FString::Printf(TEXT("Item Overlap Message From: %s"), *ThisActorName));
-	// 	GEngine->AddOnScreenDebugMessage(2, 5.f, FColor::Red, TEXT("Item::OnSphereOverlap hasn't been Overridden in child class!"));
-	// }
 }
 
 void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -54,12 +48,12 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	{
 		OverlappingCharacter->SetOverlappingItem(nullptr);
 	}	
-	// if (GEngine)
-	// {
-	// 	const FString ThisActorName = GetName();
-	// 	GEngine->AddOnScreenDebugMessage(3, 5.f, FColor::Red, FString::Printf(TEXT("Item End Overlap Message From: %s"), *ThisActorName));
-	// 	GEngine->AddOnScreenDebugMessage(4, 5.f, FColor::Red, TEXT("Item::OnSphereEndOverlap hasn't been Overridden in child class!"));
-	// }
+}
+
+void AItem::AttachMeshToSocket(USceneComponent* Parent, FName SocketName)
+{
+	const FAttachmentTransformRules Rules(EAttachmentRule::SnapToTarget,true);
+	ItemMesh->AttachToComponent(Parent,Rules,SocketName);
 }
 
 // Called when the game starts or when spawned

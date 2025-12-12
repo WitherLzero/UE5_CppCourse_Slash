@@ -15,6 +15,7 @@
 #include "Interfaces/Interactable.h"
 
 #include "Animation/AnimMontage.h"
+#include "Items/Weapons/Weapon.h"
 
 // Sets default values
 ASlashCharacter::ASlashCharacter()
@@ -63,6 +64,7 @@ void ASlashCharacter::BeginPlay()
 
 void ASlashCharacter::Move(const FInputActionValue& Value)
 {
+	if (ActionState == EActionState::EAS_Attacking) return;
 	const FVector2D MoveAxis = Value.Get<FVector2D>();
 	if (GetController())
 	{
@@ -90,15 +92,15 @@ void ASlashCharacter::Jump()
 	Super::Jump();
 }
 
-void ASlashCharacter::Interact()
+void ASlashCharacter::EKeyPressed()
 {
 	if (OverlappingItem)
 	{
-		IInteractable* Interface = Cast<IInteractable>(OverlappingItem);
-		if (Interface)
-		{
-			Interface->Interact(this);
-		}
+		InteractWithItem();
+	}
+	else
+	{
+		EquipWeapon();
 	}
 }
 
@@ -157,6 +159,43 @@ void ASlashCharacter::PlayAttackMontage()
 	}
 }
 
+void ASlashCharacter::PlayEquipMontage(FName SectionName)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && EquipMontage)
+	{
+		AnimInstance->Montage_Play(EquipMontage);
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+
+/*
+ * Inner Helpers
+ */
+void ASlashCharacter::InteractWithItem()
+{
+	IInteractable* Interface = Cast<IInteractable>(OverlappingItem);
+	if (Interface)
+	{
+		Interface->Interact(this);
+		OverlappingItem = nullptr;
+	}	
+}
+
+void ASlashCharacter::EquipWeapon()
+{
+	if (CanDisarm())
+	{
+		PlayEquipMontage(FName("Disarm"));
+		CharacterState = ECharacterState::ECS_Unequipped;
+	}else if (CanArm())
+	{
+		PlayEquipMontage(FName("Arm"));
+		CharacterState = ECharacterState::ECS_Equipped;
+	}
+}
+
 void ASlashCharacter::AttackEnd()
 {
 	ActionState = EActionState::EAS_Unoccupied;
@@ -190,7 +229,7 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EnhancedInputComponent->BindAction(MoveAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Look);
 		EnhancedInputComponent->BindAction(JumpAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Jump);
-		EnhancedInputComponent->BindAction(InteractAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Interact);
+		EnhancedInputComponent->BindAction(InteractAction,ETriggerEvent::Started,this,&ASlashCharacter::EKeyPressed);
 		EnhancedInputComponent->BindAction(AttackAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Attack);
 	}
 }
