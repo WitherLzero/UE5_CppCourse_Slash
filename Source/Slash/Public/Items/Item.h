@@ -8,6 +8,13 @@
 
 class USphereComponent;
 
+UENUM(BlueprintType)
+enum class EItemState : uint8
+{
+	EIS_Hovering UMETA(DisplayName = "Hovering"),
+	EIS_Equipped UMETA(DisplayName = "Equipped")
+};
+
 UCLASS()
 class SLASH_API AItem : public AActor, public IInteractable
 {
@@ -22,7 +29,10 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties")
+	EItemState ItemState = EItemState::EIS_Hovering;
+	
 	// Component variables
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* ItemMesh;
