@@ -15,6 +15,7 @@ class SLASH_API AWeapon : public AItem
 	GENERATED_BODY()
 
 public:
+	void SetupCollision();
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 protected:

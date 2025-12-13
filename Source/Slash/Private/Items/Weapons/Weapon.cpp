@@ -9,6 +9,13 @@
 #include "Kismet/GameplayStatics.h"
 
 
+void AWeapon::SetupCollision()
+{
+	WeaponBox->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+	WeaponBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);  
+	WeaponBox->SetCollisionResponseToChannel(ECC_Pawn,ECollisionResponse::ECR_Ignore);
+}
+
 // Sets default values
 AWeapon::AWeapon()
 {
@@ -16,9 +23,7 @@ AWeapon::AWeapon()
 	PrimaryActorTick.bCanEverTick = true;
 	WeaponBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Weapon Box"));
 	WeaponBox->SetupAttachment(GetRootComponent());
-	WeaponBox->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
-	WeaponBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);  
-	WeaponBox->SetCollisionResponseToChannel(ECC_Pawn,ECollisionResponse::ECR_Ignore);
+	SetupCollision();
 	
 	BoxTraceStart = CreateDefaultSubobject<USphereComponent>(TEXT("Box Trace Start"));
 	BoxTraceStart->SetupAttachment(GetRootComponent());
