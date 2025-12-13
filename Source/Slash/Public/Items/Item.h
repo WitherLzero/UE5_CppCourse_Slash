@@ -34,6 +34,9 @@ protected:
 	
 	// Component variables
 	UPROPERTY(VisibleAnywhere)
+	USphereComponent* Sphere;
+	
+	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* ItemMesh;
 	
 	// BlueprintReadOnly: can only get variables in event graph
@@ -65,9 +68,6 @@ protected:
 	
 	
 private:
-	UPROPERTY(VisibleAnywhere)
-	USphereComponent* Sphere;
-	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,meta = (AllowPrivateAccess = "true")) 
 	float RunningTime;
 };

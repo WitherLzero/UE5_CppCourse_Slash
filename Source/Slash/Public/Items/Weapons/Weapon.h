@@ -14,7 +14,7 @@ class SLASH_API AWeapon : public AItem
 
 public:
 	AWeapon();
-
+	virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void BeginPlay() override;
 
@@ -24,6 +24,11 @@ protected:
 
 	// Interact
 	virtual void Interact(ASlashCharacter* Caller) override;
-public:
-	virtual void Tick(float DeltaTime) override;
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	USoundBase* EquipSound;
+
+	
+	
 };
