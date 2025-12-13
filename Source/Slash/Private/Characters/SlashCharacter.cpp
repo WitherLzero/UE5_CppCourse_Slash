@@ -15,6 +15,7 @@
 #include "Interfaces/Interactable.h"
 
 #include "Animation/AnimMontage.h"
+#include "Components/BoxComponent.h"
 #include "Items/Weapons/Weapon.h"
 
 // Sets default values
@@ -213,6 +214,14 @@ void ASlashCharacter::EnableCombo()
 void ASlashCharacter::DisableCombo()
 {
 	bCanCombo = false;
+}
+
+void ASlashCharacter::SetupWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType)
+{
+	if (EquippedWeapon && EquippedWeapon->GetWeaponBox())
+	{
+		EquippedWeapon->GetWeaponBox()->SetCollisionEnabled(CollisionType);
+	}
 }
 
 void ASlashCharacter::Arm()

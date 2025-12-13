@@ -16,9 +16,9 @@ AWeapon::AWeapon()
 	PrimaryActorTick.bCanEverTick = true;
 	WeaponBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Weapon Box"));
 	WeaponBox->SetupAttachment(GetRootComponent());
-	WeaponBox->SetCollisionEnabled(ECollisionEnabled::Type::QueryOnly);
-	WeaponBox->SetCollisionResponseToAllChannels(ECR_Ignore);  // why dont need ecollisionresponse
-	WeaponBox->SetCollisionResponseToChannel(ECC_Pawn,ECR_Ignore);
+	WeaponBox->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+	WeaponBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);  
+	WeaponBox->SetCollisionResponseToChannel(ECC_Pawn,ECollisionResponse::ECR_Ignore);
 	
 	BoxTraceStart = CreateDefaultSubobject<USphereComponent>(TEXT("Box Trace Start"));
 	BoxTraceStart->SetupAttachment(GetRootComponent());
@@ -51,6 +51,7 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 	const FVector End = BoxTraceEnd->GetComponentLocation();
 	
 	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
 	FHitResult BoxHit;
 	
 	UKismetSystemLibrary::BoxTraceSingle(

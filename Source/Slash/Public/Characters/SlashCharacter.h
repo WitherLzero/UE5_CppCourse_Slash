@@ -66,12 +66,12 @@ protected:
 	// Functions for Attack Notify
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
-
 	UFUNCTION(BlueprintCallable)
 	void EnableCombo();
-
 	UFUNCTION(BlueprintCallable)
 	void DisableCombo();
+	UFUNCTION(BlueprintCallable)
+	void SetupWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType);
 	
 	// Functions for Arm Notify
 	UFUNCTION(BlueprintCallable)
