@@ -64,7 +64,7 @@ void ASlashCharacter::BeginPlay()
 
 void ASlashCharacter::Move(const FInputActionValue& Value)
 {
-	if (ActionState == EActionState::EAS_Attacking) return;
+	if (ActionState != EActionState::EAS_Unoccupied) return;
 	const FVector2D MoveAxis = Value.Get<FVector2D>();
 	if (GetController())
 	{
@@ -189,10 +189,12 @@ void ASlashCharacter::EquipWeapon()
 	{
 		PlayEquipMontage(FName("Disarm"));
 		CharacterState = ECharacterState::ECS_Unequipped;
+		ActionState = EActionState::EAS_Arming;
 	}else if (CanArm())
 	{
 		PlayEquipMontage(FName("Arm"));
 		CharacterState = ECharacterState::ECS_Equipped;
+		ActionState = EActionState::EAS_Arming;
 	}
 }
 
@@ -212,6 +214,28 @@ void ASlashCharacter::DisableCombo()
 {
 	bCanCombo = false;
 }
+
+void ASlashCharacter::Arm()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->AttachMeshToSocket(GetMesh(),FName("RightHandSocket"));
+	}
+}
+
+void ASlashCharacter::Disarm()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->AttachMeshToSocket(GetMesh(),FName("SpineSocket"));
+	}
+}
+
+void ASlashCharacter::FinishArming()
+{
+	ActionState = EActionState::EAS_Unoccupied;
+}
+
 
 // Called every frame
 void ASlashCharacter::Tick(float DeltaTime)

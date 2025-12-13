@@ -6,6 +6,8 @@
 #include "Interfaces/Interactable.h"
 #include "Item.generated.h"
 
+
+
 class USphereComponent;
 
 UENUM(BlueprintType)
@@ -21,13 +23,10 @@ class SLASH_API AItem : public AActor, public IInteractable
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AItem();
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	void AttachMeshToSocket(USceneComponent* Parent, FName SocketName);
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties")
@@ -63,6 +62,8 @@ protected:
 
 	// Empty Interact
 	virtual void Interact(ASlashCharacter* Caller) override {}
+	
+	
 private:
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* Sphere;

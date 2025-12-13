@@ -73,6 +73,13 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void DisableCombo();
 	
+	// Functions for Arm Notify
+	UFUNCTION(BlueprintCallable)
+	void Arm();
+	UFUNCTION(BlueprintCallable)
+	void Disarm();
+	UFUNCTION(BlueprintCallable)
+	void FinishArming();
 private:
 	// Character States
 	UPROPERTY(VisibleInstanceOnly)
@@ -103,7 +110,7 @@ private:
 	void InteractWithItem();
 	
 	// Weapon
-	UPROPERTY(VisibleInstanceOnly)
+	UPROPERTY(VisibleInstanceOnly,Category=Weapon)
 	AWeapon* EquippedWeapon;
 	void EquipWeapon();
 
@@ -114,10 +121,10 @@ private:
 			CharacterState == ECharacterState::ECS_Equipped;}
 	
 	// Animation montages
-	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	UAnimMontage* AttackMontage;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	UAnimMontage* EquipMontage;
 public:
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
