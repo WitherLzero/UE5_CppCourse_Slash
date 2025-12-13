@@ -4,6 +4,7 @@
 #include "Items/Weapons/Weapon.h"
 
 #include "Characters/SlashCharacter.h"
+#include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -13,12 +14,22 @@ AWeapon::AWeapon()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	WeaponBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Weapon Box"));
+	WeaponBox->SetupAttachment(GetRootComponent());
+	WeaponBox->SetCollisionEnabled(ECollisionEnabled::Type::QueryOnly);
+	WeaponBox->SetCollisionResponseToAllChannels(ECR_Ignore);  // why dont need ecollisionresponse
+	WeaponBox->SetCollisionResponseToChannel(ECC_Pawn,ECR_Ignore);
+	
+	BoxTraceStart = CreateDefaultSubobject<USphereComponent>(TEXT("Box Trace Start"));
+	BoxTraceStart->SetupAttachment(GetRootComponent());
+	BoxTraceEnd = CreateDefaultSubobject<USphereComponent>(TEXT("Box Trace End"));
+	BoxTraceEnd->SetupAttachment(GetRootComponent());
 }
 
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	WeaponBox->OnComponentBeginOverlap.AddDynamic(this,&AWeapon::OnBoxOverlap);	
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -31,6 +42,28 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	Super::OnSphereEndOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
+}
+
+void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	const FVector Start = BoxTraceStart->GetComponentLocation();
+	const FVector End = BoxTraceEnd->GetComponentLocation();
+	
+	TArray<AActor*> ActorsToIgnore;
+	FHitResult BoxHit;
+	
+	UKismetSystemLibrary::BoxTraceSingle(
+		this,
+		Start,End,
+		FVector(5.f),
+		BoxTraceStart->GetComponentRotation(),
+		TraceTypeQuery1,
+		false,
+		ActorsToIgnore,
+		EDrawDebugTrace::Type::ForDuration,
+		BoxHit,
+		true);
 }
 
 void AWeapon::Interact(ASlashCharacter* Caller)

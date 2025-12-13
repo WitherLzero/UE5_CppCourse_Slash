@@ -7,6 +7,8 @@
 #include "Weapon.generated.h"
 
 
+class UBoxComponent;
+
 UCLASS()
 class SLASH_API AWeapon : public AItem
 {
@@ -18,9 +20,12 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	// Derived callbacks
+	// Callbacks
 	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 	virtual void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
+	
+	UFUNCTION()
+	void OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	// Interact
 	virtual void Interact(ASlashCharacter* Caller) override;
@@ -28,6 +33,15 @@ protected:
 private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	USoundBase* EquipSound;
+	
+	UPROPERTY(VisibleAnywhere,Category = "Weapon Properties")
+	UBoxComponent* WeaponBox;
+	
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* BoxTraceStart;
+	
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* BoxTraceEnd;
 
 	
 	
