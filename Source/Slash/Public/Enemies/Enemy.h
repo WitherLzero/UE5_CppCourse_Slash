@@ -11,6 +11,21 @@
 
 class UAnimMontage;
 
+USTRUCT()
+struct FHitReactSections
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly,category = Montage)
+	FName Front = FName("FromFront");
+	UPROPERTY(EditDefaultsOnly,category = Montage)
+	FName Back = FName("FromBack");
+	UPROPERTY(EditDefaultsOnly,category = Montage)
+	FName Left = FName("FromLeft");
+	UPROPERTY(EditDefaultsOnly,category = Montage)
+	FName Right = FName("FromRight");
+};
+
 UCLASS()
 class SLASH_API AEnemy : public ACharacter , public IHitInterface
 {
@@ -35,5 +50,8 @@ private:
 	// Animation montages
 	UPROPERTY(EditDefaultsOnly,Category=Montage)
 	UAnimMontage* HitReactMontage;
+	
+	UPROPERTY(EditDefaultsOnly,category = Montage)
+	FHitReactSections HitReactSections;
 public:
 };

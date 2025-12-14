@@ -28,7 +28,6 @@ void AEnemy::BeginPlay()
 void AEnemy::GetHit(const FVector& ImpactLocation)
 {
 	DRAW_SPHERE_Duration(ImpactLocation,5.f)
-	PlayHitReactMontage(FName("FromFront"));
 	
 	const FVector Forward = GetActorForwardVector();
 	const FVector ImpactPoint_Horizontal = FVector(ImpactLocation.X,ImpactLocation.Y,GetActorLocation().Z);
@@ -38,13 +37,29 @@ void AEnemy::GetHit(const FVector& ImpactLocation)
 	double Theta = FMath::Acos(FVector::DotProduct(Forward,ToHit));
 	Theta = FMath::RadiansToDegrees(Theta);
 	
-	// If Hit from right, Crossproduct points down ( left-hand rules )
+	// If Hit from right, Crossproduct points down ( left-hand rule )
 	const FVector CrossProduct = FVector::CrossProduct(Forward,ToHit);
 	if (CrossProduct.Z < 0.f)
 	{
 		Theta*= -1.f;
 	}
 
+	FName Section = HitReactSections.Back;
+	if (Theta >= -45.f && Theta < 45.f)
+	{
+		Section = HitReactSections.Front;
+	}
+	else if (Theta >= -135.f && Theta < -45.f)
+	{
+		Section = HitReactSections.Left;
+	}
+	else if (Theta >= 45.f && Theta < 135.f)
+	{
+		Section = HitReactSections.Right;
+	}
+	
+	PlayHitReactMontage(Section);
+	
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(1,5.f,FColor::Red,FString::Printf(TEXT("Theta: %.2f"),Theta));
