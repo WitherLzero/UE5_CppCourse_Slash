@@ -4,6 +4,8 @@
 #include "Enemies/Enemy.h"
 
 #include "Components/CapsuleComponent.h"
+#include "Animation/AnimMontage.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 
 AEnemy::AEnemy()
@@ -22,6 +24,24 @@ void AEnemy::BeginPlay()
 	Super::BeginPlay();
 	
 }
+
+void AEnemy::GetHit(const FVector& ImpactLocation)
+{
+	DRAW_SPHERE(ImpactLocation)
+	PlayHitReactMontage(FName("FromFront"));
+	
+}
+
+void AEnemy::PlayHitReactMontage(const FName SectionName)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && HitReactMontage)
+	{
+		AnimInstance->Montage_Play(HitReactMontage);
+		AnimInstance->Montage_JumpToSection(SectionName,HitReactMontage);
+	}
+}
+
 
 void AEnemy::Tick(float DeltaTime)
 {
