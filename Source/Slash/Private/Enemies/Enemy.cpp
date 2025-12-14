@@ -5,6 +5,7 @@
 
 #include "Components/CapsuleComponent.h"
 #include "Animation/AnimMontage.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
@@ -31,6 +32,16 @@ void AEnemy::GetHit(const FVector& ImpactLocation)
 	double Theta = CalculateImpactAngle(ImpactLocation);
 
 	DirectionalHitReact(Theta);
+
+	if (HitSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this,HitSound,ImpactLocation);
+	}
+	if (HitParticles)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(this,HitParticles,ImpactLocation);
+	}
+	
 	
 	DRAW_SPHERE_Duration(ImpactLocation,5.f)
 	if (GEngine)

@@ -50,6 +50,12 @@ private:
 	// Animation montages
 	UPROPERTY(EditDefaultsOnly,Category=Montage)
 	UAnimMontage* HitReactMontage;
+	
+	UPROPERTY(EditAnywhere,category = Sound)
+	USoundBase* HitSound;
+	
+	UPROPERTY(EditAnywhere,category = VisualEffects)
+	UParticleSystem* HitParticles;
 
 	UPROPERTY(EditDefaultsOnly,category = Montage)
 	FHitReactSections HitReactSections;
