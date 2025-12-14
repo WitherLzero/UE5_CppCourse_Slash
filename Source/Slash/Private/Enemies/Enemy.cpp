@@ -34,9 +34,16 @@ void AEnemy::GetHit(const FVector& ImpactLocation)
 	const FVector ImpactPoint_Horizontal = FVector(ImpactLocation.X,ImpactLocation.Y,GetActorLocation().Z);
 	const FVector ToHit = (ImpactPoint_Horizontal - GetActorLocation()).GetSafeNormal();
 	/* cosTheta = A dot B
-	 * Theta = Acos ( cosTheta ) */
+	 * Theta = acos ( cosTheta ) */
 	double Theta = FMath::Acos(FVector::DotProduct(Forward,ToHit));
 	Theta = FMath::RadiansToDegrees(Theta);
+	
+	// If Hit from right, Crossproduct points down ( left-hand rules )
+	const FVector CrossProduct = FVector::CrossProduct(Forward,ToHit);
+	if (CrossProduct.Z < 0.f)
+	{
+		Theta*= -1.f;
+	}
 
 	if (GEngine)
 	{
@@ -44,9 +51,11 @@ void AEnemy::GetHit(const FVector& ImpactLocation)
 	}
 	
 	UKismetSystemLibrary::DrawDebugArrow(this,GetActorLocation(),GetActorLocation()+Forward*50.f,
-									5.f,FColor::Blue,5.f);
+										5.f,FColor::Red,5.f);
 	UKismetSystemLibrary::DrawDebugArrow(this,GetActorLocation(),ImpactPoint_Horizontal,
-										5.f,FColor::Orange,5.f);
+										5.f,FColor::Green,5.f);
+	UKismetSystemLibrary::DrawDebugArrow(this,GetActorLocation(),GetActorLocation()+CrossProduct*50.f,
+										5.f,FColor::Blue,5.f);
 	
 }
 
