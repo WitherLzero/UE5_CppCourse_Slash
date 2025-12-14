@@ -20,3 +20,15 @@
 		DrawDebugLine(GetWorld(),StartLocation,EndLocation,FColor::Red,false,-1.f,0,1.f); \
 		DrawDebugPoint(GetWorld(),EndLocation,10.f,FColor::Red,false, -1.f); \
 	}
+
+// Draw Version with Duration
+#define DRAW_SPHERE_Duration(Location, Duration) if(GetWorld()) DrawDebugSphere(GetWorld(), Location, 10.f, 12, FColor::Red, false, Duration);
+#define DRAW_LINE_Duration(StartLocation, EndLocation, Duration) if(GetWorld()) DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, Duration, 0, 1.f);
+#define DRAW_POINT_Duration(Location, Duration) if(GetWorld()) DrawDebugPoint(GetWorld(), Location, 10.f, FColor::Red, false, Duration);
+#define DRAW_VECTOR_Duration(StartLocation, EndLocation, Duration) if(GetWorld()) \
+	{ \
+		DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, Duration, 0, 1.f); \
+		DrawDebugPoint(GetWorld(), EndLocation, 10.f, FColor::Red, false, Duration); \
+	}
+
+

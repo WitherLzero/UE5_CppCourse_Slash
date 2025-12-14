@@ -27,8 +27,26 @@ void AEnemy::BeginPlay()
 
 void AEnemy::GetHit(const FVector& ImpactLocation)
 {
-	DRAW_SPHERE(ImpactLocation)
+	DRAW_SPHERE_Duration(ImpactLocation,5.f)
 	PlayHitReactMontage(FName("FromFront"));
+	
+	const FVector Forward = GetActorForwardVector();
+	const FVector ImpactPoint_Horizontal = FVector(ImpactLocation.X,ImpactLocation.Y,GetActorLocation().Z);
+	const FVector ToHit = (ImpactPoint_Horizontal - GetActorLocation()).GetSafeNormal();
+	/* cosTheta = A dot B
+	 * Theta = Acos ( cosTheta ) */
+	double Theta = FMath::Acos(FVector::DotProduct(Forward,ToHit));
+	Theta = FMath::RadiansToDegrees(Theta);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(1,5.f,FColor::Red,FString::Printf(TEXT("Theta: %.2f"),Theta));
+	}
+	
+	UKismetSystemLibrary::DrawDebugArrow(this,GetActorLocation(),GetActorLocation()+Forward*50.f,
+									5.f,FColor::Blue,5.f);
+	UKismetSystemLibrary::DrawDebugArrow(this,GetActorLocation(),ImpactPoint_Horizontal,
+										5.f,FColor::Orange,5.f);
 	
 }
 
