@@ -18,6 +18,8 @@ public:
 	void SetupCollision();
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
+	
+	TArray<AActor*> IgnoreActors;
 protected:
 	virtual void BeginPlay() override;
 
