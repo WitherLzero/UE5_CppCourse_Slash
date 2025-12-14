@@ -40,7 +40,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
+
 	virtual void GetHit(const FVector& ImpactLocation) override;
 
 	// Play Montage
@@ -50,8 +50,12 @@ private:
 	// Animation montages
 	UPROPERTY(EditDefaultsOnly,Category=Montage)
 	UAnimMontage* HitReactMontage;
-	
+
 	UPROPERTY(EditDefaultsOnly,category = Montage)
 	FHitReactSections HitReactSections;
+
+	double CalculateImpactAngle(const FVector& ImpactLocation);
+	void DirectionalHitReact(double Theta);
+
 public:
 };
