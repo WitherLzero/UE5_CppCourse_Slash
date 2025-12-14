@@ -32,6 +32,9 @@ protected:
 
 	// Interact
 	virtual void Interact(ASlashCharacter* Caller) override;
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void ApplyField(const FVector& FieldLocation);
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
