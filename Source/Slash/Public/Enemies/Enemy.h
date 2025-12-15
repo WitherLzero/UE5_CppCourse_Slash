@@ -41,7 +41,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void GetHit(const FVector& ImpactLocation) override;
+	void GetHit_Implementation(const FVector& ImpactLocation) override;
 
 	// Play Montage
 	void PlayHitReactMontage(const FName SectionName);

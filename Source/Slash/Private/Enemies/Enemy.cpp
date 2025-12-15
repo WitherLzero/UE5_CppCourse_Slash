@@ -27,7 +27,7 @@ void AEnemy::BeginPlay()
 }
 
 
-void AEnemy::GetHit(const FVector& ImpactLocation)
+void AEnemy::GetHit_Implementation(const FVector& ImpactLocation)
 {
 	double Theta = CalculateImpactAngle(ImpactLocation);
 
