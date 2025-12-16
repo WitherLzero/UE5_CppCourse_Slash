@@ -7,6 +7,8 @@
 #include "Interfaces/HitInterface.h"
 #include "BreakableActor.generated.h"
 
+class ATreasure;
+
 UCLASS()
 class SLASH_API ABreakableActor : public AActor, public IHitInterface
 {
@@ -24,5 +26,8 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere);
 	UGeometryCollectionComponent* GeometryCollection;
+	
+	UPROPERTY(EditAnywhere, Category = "Breakable Properties")
+	TSubclassOf<ATreasure> TreasureClass;
 public:
 };
