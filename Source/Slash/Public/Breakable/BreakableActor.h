@@ -28,6 +28,6 @@ private:
 	UGeometryCollectionComponent* GeometryCollection;
 	
 	UPROPERTY(EditAnywhere, Category = "Breakable Properties")
-	TSubclassOf<ATreasure> TreasureClass;
+	TArray<TSubclassOf<ATreasure>> TreasureClasses;
 public:
 };
