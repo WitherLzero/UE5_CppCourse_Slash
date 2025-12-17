@@ -51,8 +51,9 @@ void ASlashCharacter::BeginPlay()
 
 void ASlashCharacter::Move(const FInputActionValue& Value)
 {
-	if (ActionState != EActionState::EAS_Unoccupied) return;
 	const FVector2D MoveAxis = Value.Get<FVector2D>();
+	LastInputAxis = MoveAxis;
+	if (ActionState != EActionState::EAS_Unoccupied) return;
 	if (GetController())
 	{
 		const FRotator YawRotation(0.f,GetControlRotation().Yaw,0.f);
@@ -95,10 +96,11 @@ void ASlashCharacter::Attack()
 {
 	// Ensure character has weapon equipped
 	if (CharacterState == ECharacterState::ECS_Unequipped) return;
-
+	
 	// Case 1: If idle, start the first attack
 	if (ActionState == EActionState::EAS_Unoccupied)
 	{
+		RotateToInputDirection();
 		PlayAttackMontage();
 		ActionState = EActionState::EAS_Attacking;
 	}
@@ -113,6 +115,7 @@ void ASlashCharacter::Attack()
 		{
 			AttackIndex = 0;
 		}
+		RotateToInputDirection();
 		PlayAttackMontage();
 	}
 }
@@ -230,6 +233,28 @@ void ASlashCharacter::Disarm()
 void ASlashCharacter::FinishArming()
 {
 	ActionState = EActionState::EAS_Unoccupied;
+}
+
+void ASlashCharacter::RotateToInputDirection()
+{
+	if (LastInputAxis.IsNearlyZero()) return;
+
+	if (GetController())
+	{
+		const FRotator YawRotation(0.f,GetControlRotation().Yaw,0.f);
+		const FVector Forward = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		const FVector Right = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		
+		const FVector TargetDirection = (Forward*LastInputAxis.Y + Right*LastInputAxis.X).GetSafeNormal();
+	
+		if (!TargetDirection.IsNearlyZero())
+		{
+			SetActorRotation(TargetDirection.Rotation());	
+			LastInputAxis = FVector2D::ZeroVector;
+		}
+	}
+	
+	
 }
 
 

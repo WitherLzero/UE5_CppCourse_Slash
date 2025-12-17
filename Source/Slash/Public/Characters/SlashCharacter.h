@@ -90,6 +90,8 @@ private:
 	
 	int32 AttackIndex = 0;
 	bool bCanCombo = false;
+	FVector2D LastInputAxis = FVector2D::ZeroVector;
+	void RotateToInputDirection();
 	
 	// Components
 	UPROPERTY(VisibleAnywhere)
