@@ -7,6 +7,8 @@
 #include "HealthBarComponent.generated.h"
 
 
+class UHealthBar;
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class SLASH_API UHealthBarComponent : public UWidgetComponent
 {
@@ -14,11 +16,15 @@ class SLASH_API UHealthBarComponent : public UWidgetComponent
 
 public:
 	UHealthBarComponent();
-
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override;
+	
+	void SetHealthPercent(float Percent);
 protected:
 	virtual void BeginPlay() override;
 
-public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+private:
+	UPROPERTY()
+	UHealthBar* HealthBarWidget;
+	
 };

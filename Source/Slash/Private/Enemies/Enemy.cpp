@@ -30,6 +30,12 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Temporal Test
+	if (HealthBarComponent)
+	{
+		HealthBarComponent->SetHealthPercent(0.3f);
+	}
 	
 }
 
