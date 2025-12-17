@@ -53,7 +53,7 @@ private:
 	UAttributeComponent* Attributes;
 	
 	UPROPERTY(VisibleAnywhere)
-	UHealthBarComponent* HealthBar;
+	UHealthBarComponent* HealthBarComponent;
 	
 	UPROPERTY(EditDefaultsOnly,Category=Montage)
 	UAnimMontage* HitReactMontage;

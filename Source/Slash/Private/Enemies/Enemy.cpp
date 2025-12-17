@@ -22,8 +22,8 @@ AEnemy::AEnemy()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);
 	
 	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
-	HealthBar = CreateDefaultSubobject<UHealthBarComponent>(TEXT("Health Bar"));
-	HealthBar->SetupAttachment(GetRootComponent());
+	HealthBarComponent = CreateDefaultSubobject<UHealthBarComponent>(TEXT("Health Bar"));
+	HealthBarComponent->SetupAttachment(GetRootComponent());
 	
 }
 
