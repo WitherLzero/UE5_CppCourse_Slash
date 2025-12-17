@@ -5,6 +5,8 @@
 
 #include "Components/CapsuleComponent.h"
 #include "Animation/AnimMontage.h"
+#include "Components/AttributeComponent.h"
+#include "HUD/HealthBarComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -18,6 +20,11 @@ AEnemy::AEnemy()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility,ECollisionResponse::ECR_Block);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera,ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);
+	
+	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
+	HealthBar = CreateDefaultSubobject<UHealthBarComponent>(TEXT("Health Bar"));
+	HealthBar->SetupAttachment(GetRootComponent());
+	
 }
 
 void AEnemy::BeginPlay()

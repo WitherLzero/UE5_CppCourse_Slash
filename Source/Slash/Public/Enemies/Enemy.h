@@ -9,6 +9,8 @@
 #include "Slash/DebugMacro.h"
 #include "Enemy.generated.h"
 
+class UHealthBarComponent;
+class UAttributeComponent;
 class UAnimMontage;
 
 USTRUCT()
@@ -47,7 +49,12 @@ protected:
 	void PlayHitReactMontage(const FName SectionName);
 
 private:
-	// Animation montages
+	UPROPERTY(VisibleAnywhere)
+	UAttributeComponent* Attributes;
+	
+	UPROPERTY(VisibleAnywhere)
+	UHealthBarComponent* HealthBar;
+	
 	UPROPERTY(EditDefaultsOnly,Category=Montage)
 	UAnimMontage* HitReactMontage;
 	
