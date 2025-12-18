@@ -36,9 +36,15 @@ void AEnemy::BeginPlay()
 
 void AEnemy::GetHit_Implementation(const FVector& ImpactLocation)
 {
-	double Theta = CalculateImpactAngle(ImpactLocation);
-
-	DirectionalHitReact(Theta);
+	if (Attributes->IsAlive())
+	{
+		double Theta = CalculateImpactAngle(ImpactLocation);
+		DirectionalHitReact(Theta);
+	}
+	else
+	{
+		PlayDeathMontage();
+	}
 
 	if (HitSound)
 	{
@@ -49,12 +55,6 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactLocation)
 		UGameplayStatics::SpawnEmitterAtLocation(this,HitParticles,ImpactLocation);
 	}
 	
-	
-	DRAW_SPHERE_Duration(ImpactLocation,5.f)
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(1,5.f,FColor::Red,FString::Printf(TEXT("Theta: %.2f"),Theta));
-	}
 	
 }
 
@@ -79,6 +79,22 @@ void AEnemy::PlayHitReactMontage(const FName SectionName)
 	{
 		AnimInstance->Montage_Play(HitReactMontage);
 		AnimInstance->Montage_JumpToSection(SectionName,HitReactMontage);
+	}
+}
+
+void AEnemy::PlayDeathMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && DeathMontage)
+	{
+		const int NumSections = DeathMontage->GetNumSections();
+		if (NumSections > 0)
+		{
+			const int32 Selection = FMath::RandRange(0,NumSections - 1);
+			FName SectionName = DeathMontage->GetSectionName(Selection);
+			AnimInstance->Montage_Play(DeathMontage);
+			AnimInstance->Montage_JumpToSection(SectionName,DeathMontage);
+		}
 	}
 }
 
