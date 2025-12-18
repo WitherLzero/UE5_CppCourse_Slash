@@ -94,6 +94,13 @@ void AEnemy::PlayDeathMontage()
 			FName SectionName = DeathMontage->GetSectionName(Selection);
 			AnimInstance->Montage_Play(DeathMontage);
 			AnimInstance->Montage_JumpToSection(SectionName,DeathMontage);
+			
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			if (HealthBarComponent)
+			{
+				HealthBarComponent->SetVisibility(false);
+			}
+			
 			const float SectionTime = DeathMontage->GetSectionLength(Selection);
 			GetWorldTimerManager().SetTimer(DeathTimer,this,&AEnemy::DeathEnd,SectionTime);
 		}
