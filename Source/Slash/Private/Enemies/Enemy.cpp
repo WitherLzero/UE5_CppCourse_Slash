@@ -94,6 +94,8 @@ void AEnemy::PlayDeathMontage()
 			FName SectionName = DeathMontage->GetSectionName(Selection);
 			AnimInstance->Montage_Play(DeathMontage);
 			AnimInstance->Montage_JumpToSection(SectionName,DeathMontage);
+			const float SectionTime = DeathMontage->GetSectionLength(Selection);
+			GetWorldTimerManager().SetTimer(DeathTimer,this,&AEnemy::DeathEnd,SectionTime);
 		}
 	}
 }
@@ -117,14 +119,6 @@ double AEnemy::CalculateImpactAngle(const FVector& ImpactLocation)
 		Theta*= -1.f;
 	}
 	
-	/* Temporal debugs */
-	UKismetSystemLibrary::DrawDebugArrow(this,GetActorLocation(),GetActorLocation()+Forward*50.f,
-									5.f,FColor::Red,5.f);
-	UKismetSystemLibrary::DrawDebugArrow(this,GetActorLocation(),ImpactPoint_Horizontal,
-										5.f,FColor::Green,5.f);
-	UKismetSystemLibrary::DrawDebugArrow(this,GetActorLocation(),GetActorLocation()+CrossProduct*50.f,
-										5.f,FColor::Blue,5.f);
-	
 	return Theta;
 }
 
@@ -144,6 +138,13 @@ void AEnemy::DirectionalHitReact(double Theta)
 		Section = HitReactSections.Right;
 	}
 	PlayHitReactMontage(Section);
+}
+
+void AEnemy::DeathEnd()
+{
+	GetMesh()->bPauseAnims = true;
+
+	SetLifeSpan(DeathLifeSpan);
 }
 
 void AEnemy::Tick(float DeltaTime)

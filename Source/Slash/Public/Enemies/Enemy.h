@@ -53,6 +53,11 @@ protected:
 	void PlayDeathMontage();
 
 private:
+	UPROPERTY(EditAnywhere,Category="Combat")
+	float DeathLifeSpan = 3.f;
+	
+	FTimerHandle DeathTimer;
+	
 	UPROPERTY(VisibleAnywhere)
 	UAttributeComponent* Attributes;
 	
@@ -76,6 +81,6 @@ private:
 
 	double CalculateImpactAngle(const FVector& ImpactLocation);
 	void DirectionalHitReact(double Theta);
-
+	void DeathEnd();
 public:
 };
