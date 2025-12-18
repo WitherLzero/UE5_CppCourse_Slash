@@ -22,7 +22,7 @@ AEnemy::AEnemy()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);
 	
 	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
-	HealthBarComponent = CreateDefaultSubobject<UHealthBarComponent>(TEXT("Health Bar"));
+	HealthBarComponent = CreateDefaultSubobject<UHealthBarComponent>(TEXT("Health Bar Component"));
 	HealthBarComponent->SetupAttachment(GetRootComponent());
 	
 }
@@ -30,15 +30,9 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Temporal Test
-	if (HealthBarComponent)
-	{
-		HealthBarComponent->SetHealthPercent(0.3f);
-	}
+	HealthBarComponent->SetHealthPercent(Attributes->GetHealthPercent());
 	
 }
-
 
 void AEnemy::GetHit_Implementation(const FVector& ImpactLocation)
 {
@@ -62,8 +56,20 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactLocation)
 		GEngine->AddOnScreenDebugMessage(1,5.f,FColor::Red,FString::Printf(TEXT("Theta: %.2f"),Theta));
 	}
 	
+}
 
-	
+float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	if (Attributes)
+	{
+		Attributes->ReceiveDamage(DamageAmount);
+		if (HealthBarComponent)
+		{
+			HealthBarComponent->SetHealthPercent(Attributes->GetHealthPercent());
+		}
+	}
+	return DamageAmount;	
 }
 
 void AEnemy::PlayHitReactMontage(const FName SectionName)

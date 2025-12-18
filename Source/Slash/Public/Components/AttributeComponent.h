@@ -29,4 +29,6 @@ private:
 	UPROPERTY( EditAnywhere, Category = "Attributes")
 	float MaxHealth;
 public:
+	void ReceiveDamage(float Damage);
+	FORCEINLINE float GetHealthPercent() const { return Health / MaxHealth; }
 };

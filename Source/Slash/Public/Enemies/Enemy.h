@@ -44,6 +44,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	void GetHit_Implementation(const FVector& ImpactLocation) override;
+	
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	// Play Montage
 	void PlayHitReactMontage(const FName SectionName);

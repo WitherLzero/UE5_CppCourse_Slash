@@ -83,6 +83,13 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 			IHitInterface::Execute_GetHit(BoxHit.GetActor(),BoxHit.ImpactPoint);
 		}
 		ApplyField(BoxHit.ImpactPoint);
+		UGameplayStatics::ApplyDamage(
+			BoxHit.GetActor(),
+			Damage,
+			GetInstigator()->GetController(),
+			this,
+			UDamageType::StaticClass()
+			);
 		IgnoreActors.AddUnique(BoxHit.GetActor());
 	}
 }
@@ -91,6 +98,8 @@ void AWeapon::Interact(ASlashCharacter* Caller)
 {
 	AttachMeshToSocket(Caller->GetMesh(),FName("RightHandSocket"));
 	ItemState = EItemState::EIS_Equipped;
+	this->SetOwner(Caller);
+	this->SetInstigator(Caller);
 	Caller->SetWeapon(this);
 	Caller->SetCharacterState(ECharacterState::ECS_Equipped);
 

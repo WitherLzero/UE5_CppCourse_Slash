@@ -38,6 +38,9 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	float Damage = 10.0f;
+	
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	USoundBase* EquipSound;
 	
 	UPROPERTY(VisibleAnywhere,Category = "Weapon Properties")
