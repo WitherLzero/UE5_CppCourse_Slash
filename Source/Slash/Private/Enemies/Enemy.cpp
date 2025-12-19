@@ -38,20 +38,18 @@ void AEnemy::BeginPlay()
 	}
 	
 	EnemyController = Cast<AAIController>(GetController());
-	if (EnemyController && PatrolTarget)
-	{
-		FAIMoveRequest MoveRequest;
-		MoveRequest.SetGoalActor(PatrolTarget);
-		MoveRequest.SetAcceptanceRadius(10.f);
-		EnemyController->MoveTo(MoveRequest);
-	}
-	
 	
 }
 
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	if (EnemyController->GetMoveStatus() == EPathFollowingStatus::Idle )
+	{
+		MoveToTarget(PatrolTarget);
+		PatrolTarget = SelectPatrolTarget();
+	}
 	
 }
 
@@ -166,6 +164,36 @@ void AEnemy::DirectionalHitReact(double Theta)
 		Section = HitReactSections.Right;
 	}
 	PlayHitReactMontage(Section);
+}
+
+void AEnemy::MoveToTarget(AActor* Target) const
+{
+	if (!EnemyController || !Target) return;
+	FAIMoveRequest MoveRequest;
+	MoveRequest.SetGoalActor(Target);
+	MoveRequest.SetAcceptanceRadius(10.f);
+	EnemyController->MoveTo(MoveRequest);
+}
+
+AActor* AEnemy::SelectPatrolTarget()
+{
+	TArray<AActor*> ValidTargets;
+	for (auto Target: PatrolTargets)
+	{
+		if (Target!=PatrolTarget)
+		{
+			ValidTargets.AddUnique(Target);
+		}
+	}
+		
+	const int32 Num = ValidTargets.Num();
+	if (Num > 0)
+	{
+		const int32 Index = FMath::RandRange(0,Num - 1);
+		return ValidTargets[Index];
+	}
+	
+	return nullptr;
 }
 
 void AEnemy::DeathEnd()

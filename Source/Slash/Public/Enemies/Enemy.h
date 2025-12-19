@@ -71,6 +71,7 @@ private:
 	UPROPERTY(EditInstanceOnly,Category="AI Navigation")
 	TArray<AActor*> PatrolTargets;
 	
+	// Timers
 	FTimerHandle DeathTimer;
 	
 	UPROPERTY(VisibleAnywhere)
@@ -85,17 +86,22 @@ private:
 	UPROPERTY(EditDefaultsOnly,Category=Montage)
 	UAnimMontage* DeathMontage;
 	
+	UPROPERTY(EditDefaultsOnly,category = Montage)
+	FHitReactSections HitReactSections;
+	
 	UPROPERTY(EditAnywhere,category = Sound)
 	USoundBase* HitSound;
 	
 	UPROPERTY(EditAnywhere,category = VisualEffects)
 	UParticleSystem* HitParticles;
-
-	UPROPERTY(EditDefaultsOnly,category = Montage)
-	FHitReactSections HitReactSections;
+	
 
 	double CalculateImpactAngle(const FVector& ImpactLocation);
 	void DirectionalHitReact(double Theta);
+	
+	void MoveToTarget(AActor* Target) const;
+	AActor* SelectPatrolTarget();
+	
 	void DeathEnd();
 	
 	
