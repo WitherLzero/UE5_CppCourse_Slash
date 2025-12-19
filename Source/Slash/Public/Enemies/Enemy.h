@@ -9,6 +9,7 @@
 #include "Slash/DebugMacro.h"
 #include "Enemy.generated.h"
 
+class AAIController;
 class UHealthBarComponent;
 class UAttributeComponent;
 class UAnimMontage;
@@ -53,8 +54,22 @@ protected:
 	void PlayDeathMontage();
 
 private:
+	// Combat
 	UPROPERTY(EditAnywhere,Category="Combat")
 	float DeathLifeSpan = 3.f;
+	
+	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
+	AActor* CombatTarget;
+	
+	// Navigation
+	UPROPERTY()
+	AAIController* EnemyController;
+	
+	UPROPERTY(EditInstanceOnly,Category="AI Navigation")
+	AActor* PatrolTarget;
+	
+	UPROPERTY(EditInstanceOnly,Category="AI Navigation")
+	TArray<AActor*> PatrolTargets;
 	
 	FTimerHandle DeathTimer;
 	
@@ -82,5 +97,7 @@ private:
 	double CalculateImpactAngle(const FVector& ImpactLocation);
 	void DirectionalHitReact(double Theta);
 	void DeathEnd();
+	
+	
 public:
 };

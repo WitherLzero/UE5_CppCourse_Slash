@@ -9,6 +9,8 @@
 #include "HUD/HealthBarComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "AIController.h"
+#include "Navigation/PathFollowingComponent.h"
 
 
 AEnemy::AEnemy()
@@ -30,7 +32,26 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	HealthBarComponent->SetHealthPercent(Attributes->GetHealthPercent());
+	if (HealthBarComponent)
+	{
+		HealthBarComponent->SetHealthPercent(Attributes->GetHealthPercent());
+	}
+	
+	EnemyController = Cast<AAIController>(GetController());
+	if (EnemyController && PatrolTarget)
+	{
+		FAIMoveRequest MoveRequest;
+		MoveRequest.SetGoalActor(PatrolTarget);
+		MoveRequest.SetAcceptanceRadius(10.f);
+		EnemyController->MoveTo(MoveRequest);
+	}
+	
+	
+}
+
+void AEnemy::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 	
 }
 
@@ -154,10 +175,6 @@ void AEnemy::DeathEnd()
 	SetLifeSpan(DeathLifeSpan);
 }
 
-void AEnemy::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
 
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
