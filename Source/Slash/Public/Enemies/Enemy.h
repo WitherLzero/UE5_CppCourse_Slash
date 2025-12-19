@@ -73,6 +73,7 @@ private:
 	
 	// Timers
 	FTimerHandle DeathTimer;
+	FTimerHandle PatrolTimer;
 	
 	UPROPERTY(VisibleAnywhere)
 	UAttributeComponent* Attributes;
@@ -102,7 +103,11 @@ private:
 	void MoveToTarget(AActor* Target) const;
 	AActor* SelectPatrolTarget();
 	
+	// Timer callbacks
 	void DeathEnd();
+	void PatrolWaitEnd();
+
+	
 	
 	
 public:

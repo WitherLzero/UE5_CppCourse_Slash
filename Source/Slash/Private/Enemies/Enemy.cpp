@@ -38,6 +38,7 @@ void AEnemy::BeginPlay()
 	}
 	
 	EnemyController = Cast<AAIController>(GetController());
+	MoveToTarget(PatrolTarget);
 	
 }
 
@@ -47,8 +48,10 @@ void AEnemy::Tick(float DeltaTime)
 	
 	if (EnemyController->GetMoveStatus() == EPathFollowingStatus::Idle )
 	{
-		MoveToTarget(PatrolTarget);
-		PatrolTarget = SelectPatrolTarget();
+		if (!GetWorldTimerManager().IsTimerActive(PatrolTimer))
+		{
+			GetWorldTimerManager().SetTimer(PatrolTimer,this,&AEnemy::PatrolWaitEnd,3.f);
+		}
 	}
 	
 }
@@ -201,6 +204,12 @@ void AEnemy::DeathEnd()
 	GetMesh()->bPauseAnims = true;
 
 	SetLifeSpan(DeathLifeSpan);
+}
+
+void AEnemy::PatrolWaitEnd()
+{
+	PatrolTarget = SelectPatrolTarget(); 
+	MoveToTarget(PatrolTarget);
 }
 
 
