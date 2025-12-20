@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
-#include "CharacterTypes.h"
+#include "_Enums/CharacterTypes.h"
 #include "GameFramework/Character.h"
 #include "SlashCharacter.generated.h"
 

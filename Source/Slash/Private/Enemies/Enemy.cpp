@@ -10,7 +10,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "AIController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "Perception/PawnSensingComponent.h"
 
 
 AEnemy::AEnemy()
@@ -24,8 +26,10 @@ AEnemy::AEnemy()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);
 	
 	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
+	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensing"));
 	HealthBarComponent = CreateDefaultSubobject<UHealthBarComponent>(TEXT("Health Bar Component"));
 	HealthBarComponent->SetupAttachment(GetRootComponent());
+	
 	
 }
 
@@ -36,23 +40,32 @@ void AEnemy::BeginPlay()
 	{
 		HealthBarComponent->SetHealthPercent(Attributes->GetHealthPercent());
 	}
+
+	if (PawnSensing)
+	{
+		PawnSensing->OnSeePawn.AddDynamic(this,&AEnemy::PawnSeen);
+	}
 	
 	EnemyController = Cast<AAIController>(GetController());
 	MoveToTarget(PatrolTarget);
 	
 }
 
+
+
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	if (EnemyController->GetMoveStatus() == EPathFollowingStatus::Idle )
+
+	if (EnemyState != EEnemyState::EES_Patrolling)
 	{
-		if (!GetWorldTimerManager().IsTimerActive(PatrolTimer))
-		{
-			GetWorldTimerManager().SetTimer(PatrolTimer,this,&AEnemy::PatrolWaitEnd,3.f);
-		}
+		CheckCombatTarget();
 	}
+	else
+	{
+		HandlePatrol();
+	}
+	
 	
 }
 
@@ -129,6 +142,25 @@ void AEnemy::PlayDeathMontage()
 	}
 }
 
+void AEnemy::PawnSeen(APawn* Pawn)
+{
+	//TO DO: Implement combat logic when notice players
+	if (EnemyState == EEnemyState::EES_Chasing) return;
+	if (Pawn->ActorHasTag(FName("Player")))
+	{
+		CombatTarget = Pawn;
+		UE_LOG(LogTemp,Warning,TEXT("See Player"))
+		if (InTargetRange(CombatTarget,CombatRadius))
+		{
+			UE_LOG(LogTemp,Warning,TEXT("In Combat Range, Start chasing"))
+			EnemyState = EEnemyState::EES_Chasing;
+			GetWorldTimerManager().ClearTimer(PatrolTimer);
+			GetCharacterMovement()->MaxWalkSpeed = 300.f;
+			MoveToTarget(CombatTarget);
+		}
+	}
+}
+
 
 double AEnemy::CalculateImpactAngle(const FVector& ImpactLocation)
 {
@@ -167,6 +199,36 @@ void AEnemy::DirectionalHitReact(double Theta)
 		Section = HitReactSections.Right;
 	}
 	PlayHitReactMontage(Section);
+}
+
+void AEnemy::CheckCombatTarget()
+{
+	if (!InTargetRange(CombatTarget,CombatRadius) && EnemyState != EEnemyState::EES_Patrolling)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Chasing, but lose interest."))
+		CombatTarget = nullptr;
+		EnemyState = EEnemyState::EES_Patrolling;
+		GetCharacterMovement()->MaxWalkSpeed = 125.f;
+		MoveToTarget(PatrolTarget);
+	}
+}
+
+void AEnemy::HandlePatrol()
+{
+	if (EnemyController->GetMoveStatus() == EPathFollowingStatus::Idle )
+	{
+		if (!GetWorldTimerManager().IsTimerActive(PatrolTimer))
+		{
+			GetWorldTimerManager().SetTimer(PatrolTimer,this,&AEnemy::PatrolWaitEnd,3.f);
+		}
+	}
+}
+
+bool AEnemy::InTargetRange(AActor* Target, double Radius) const
+{
+	if (!Target) return false;
+	const double Distance = (Target->GetActorLocation() - GetActorLocation()).Size();
+	return Distance <= Radius;
 }
 
 void AEnemy::MoveToTarget(AActor* Target) const

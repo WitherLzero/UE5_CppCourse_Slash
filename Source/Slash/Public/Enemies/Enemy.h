@@ -7,8 +7,10 @@
 #include "Interfaces/HitInterface.h"
 
 #include "Slash/DebugMacro.h"
+#include "_Enums/CharacterTypes.h"
 #include "Enemy.generated.h"
 
+class UPawnSensingComponent;
 class AAIController;
 class UHealthBarComponent;
 class UAttributeComponent;
@@ -53,33 +55,40 @@ protected:
 	
 	void PlayDeathMontage();
 
+	// Callbacks
+	UFUNCTION()
+	void PawnSeen(APawn* Pawn);
+	
 private:
+	// Components
+	UPROPERTY(VisibleAnywhere)
+	UAttributeComponent* Attributes;
+	UPROPERTY(VisibleAnywhere)
+	UHealthBarComponent* HealthBarComponent;
+	UPROPERTY(VisibleAnywhere)
+	UPawnSensingComponent* PawnSensing;
+	
+	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
+	
 	// Combat
 	UPROPERTY(EditAnywhere,Category="Combat")
 	float DeathLifeSpan = 3.f;
-	
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
 	AActor* CombatTarget;
+	UPROPERTY(EditInstanceOnly, Category = "Combat")
+	double CombatRadius = 500.f;
 	
 	// Navigation
 	UPROPERTY()
 	AAIController* EnemyController;
-	
 	UPROPERTY(EditInstanceOnly,Category="AI Navigation")
 	AActor* PatrolTarget;
-	
 	UPROPERTY(EditInstanceOnly,Category="AI Navigation")
 	TArray<AActor*> PatrolTargets;
 	
 	// Timers
 	FTimerHandle DeathTimer;
 	FTimerHandle PatrolTimer;
-	
-	UPROPERTY(VisibleAnywhere)
-	UAttributeComponent* Attributes;
-	
-	UPROPERTY(VisibleAnywhere)
-	UHealthBarComponent* HealthBarComponent;
 	
 	UPROPERTY(EditDefaultsOnly,Category=Montage)
 	UAnimMontage* HitReactMontage;
@@ -100,6 +109,10 @@ private:
 	double CalculateImpactAngle(const FVector& ImpactLocation);
 	void DirectionalHitReact(double Theta);
 	
+	void CheckCombatTarget();
+	void HandlePatrol();
+	
+	bool InTargetRange(AActor* Target, double Radius) const;
 	void MoveToTarget(AActor* Target) const;
 	AActor* SelectPatrolTarget();
 	
@@ -108,7 +121,6 @@ private:
 	void PatrolWaitEnd();
 
 	
-	
-	
+
 public:
 };
