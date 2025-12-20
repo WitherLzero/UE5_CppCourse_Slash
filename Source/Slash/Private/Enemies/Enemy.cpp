@@ -49,6 +49,8 @@ void AEnemy::BeginPlay()
 	EnemyController = Cast<AAIController>(GetController());
 	MoveToTarget(PatrolTarget);
 	
+	
+	
 }
 
 
@@ -56,6 +58,10 @@ void AEnemy::BeginPlay()
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	// debug
+	DrawDebugSphere(GetWorld(),GetActorLocation(),AttackRadius,12,FColor::Red,false);
+	DrawDebugSphere(GetWorld(),GetActorLocation(),CombatRadius,12,FColor::Blue,false);
 
 	if (EnemyState != EEnemyState::EES_Patrolling)
 	{
@@ -145,7 +151,7 @@ void AEnemy::PlayDeathMontage()
 void AEnemy::PawnSeen(APawn* Pawn)
 {
 	//TO DO: Implement combat logic when notice players
-	if (EnemyState == EEnemyState::EES_Chasing) return;
+	if (EnemyState != EEnemyState::EES_Patrolling) return;
 	if (Pawn->ActorHasTag(FName("Player")))
 	{
 		CombatTarget = Pawn;
@@ -210,6 +216,17 @@ void AEnemy::CheckCombatTarget()
 		EnemyState = EEnemyState::EES_Patrolling;
 		GetCharacterMovement()->MaxWalkSpeed = 125.f;
 		MoveToTarget(PatrolTarget);
+	}else if (!InTargetRange(CombatTarget,AttackRadius) && EnemyState != EEnemyState::EES_Chasing)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Chasing outside attack range"))
+		EnemyState = EEnemyState::EES_Chasing;
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		MoveToTarget(CombatTarget);
+	}else if (InTargetRange(CombatTarget,AttackRadius) && EnemyState != EEnemyState::EES_Attacking)
+	{
+		EnemyState = EEnemyState::EES_Attacking;
+		UE_LOG(LogTemp,Warning,TEXT("Attacking inside attack range"))
+		
 	}
 }
 

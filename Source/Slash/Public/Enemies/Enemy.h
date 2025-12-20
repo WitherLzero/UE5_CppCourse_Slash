@@ -77,7 +77,8 @@ private:
 	AActor* CombatTarget;
 	UPROPERTY(EditInstanceOnly, Category = "Combat")
 	double CombatRadius = 500.f;
-	
+	UPROPERTY(EditInstanceOnly, Category = "Combat")
+	double AttackRadius = 200.f;
 	// Navigation
 	UPROPERTY()
 	AAIController* EnemyController;
