@@ -207,14 +207,6 @@ void ASlashCharacter::DisableCombo()
 	bCanCombo = false;
 }
 
-void ASlashCharacter::SetupWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType)
-{
-	if (EquippedWeapon && EquippedWeapon->GetWeaponBox())
-	{
-		EquippedWeapon->GetWeaponBox()->SetCollisionEnabled(CollisionType);
-		EquippedWeapon->IgnoreActors.Empty();
-	}
-}
 
 void ASlashCharacter::Arm()
 {

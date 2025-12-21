@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Framework/BaseCharacter.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
 
@@ -16,23 +17,10 @@ class UHealthBarComponent;
 class UAttributeComponent;
 class UAnimMontage;
 
-USTRUCT()
-struct FHitReactSections
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditDefaultsOnly,category = Montage)
-	FName Front = FName("FromFront");
-	UPROPERTY(EditDefaultsOnly,category = Montage)
-	FName Back = FName("FromBack");
-	UPROPERTY(EditDefaultsOnly,category = Montage)
-	FName Left = FName("FromLeft");
-	UPROPERTY(EditDefaultsOnly,category = Montage)
-	FName Right = FName("FromRight");
-};
+
 
 UCLASS()
-class SLASH_API AEnemy : public ACharacter , public IHitInterface
+class SLASH_API AEnemy : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -51,9 +39,7 @@ protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	// Play Montage
-	void PlayHitReactMontage(const FName SectionName);
-	
-	void PlayDeathMontage();
+	virtual void PlayDeathMontage() override;
 
 	// Callbacks
 	UFUNCTION()
@@ -61,8 +47,6 @@ protected:
 	
 private:
 	// Components
-	UPROPERTY(VisibleAnywhere)
-	UAttributeComponent* Attributes;
 	UPROPERTY(VisibleAnywhere)
 	UHealthBarComponent* HealthBarComponent;
 	UPROPERTY(VisibleAnywhere)
@@ -86,29 +70,10 @@ private:
 	AActor* PatrolTarget;
 	UPROPERTY(EditInstanceOnly,Category="AI Navigation")
 	TArray<AActor*> PatrolTargets;
-	
 	// Timers
 	FTimerHandle DeathTimer;
 	FTimerHandle PatrolTimer;
 	
-	UPROPERTY(EditDefaultsOnly,Category=Montage)
-	UAnimMontage* HitReactMontage;
-	
-	UPROPERTY(EditDefaultsOnly,Category=Montage)
-	UAnimMontage* DeathMontage;
-	
-	UPROPERTY(EditDefaultsOnly,category = Montage)
-	FHitReactSections HitReactSections;
-	
-	UPROPERTY(EditAnywhere,category = Sound)
-	USoundBase* HitSound;
-	
-	UPROPERTY(EditAnywhere,category = VisualEffects)
-	UParticleSystem* HitParticles;
-	
-
-	double CalculateImpactAngle(const FVector& ImpactLocation);
-	void DirectionalHitReact(double Theta);
 	
 	void CheckCombatTarget();
 	void HandlePatrol();
@@ -121,7 +86,6 @@ private:
 	void DeathEnd();
 	void PatrolWaitEnd();
 
-	
 
 public:
 };

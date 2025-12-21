@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
+#include "Framework/BaseCharacter.h"
 #include "_Enums/CharacterTypes.h"
-#include "GameFramework/Character.h"
 #include "SlashCharacter.generated.h"
 
-class AWeapon;
 class AItem;
 class UCameraComponent;
 class USpringArmComponent;
@@ -17,10 +16,9 @@ class UGroomComponent;
 class UInputMappingContext;
 class UInputAction;
 
-class UAnimMontage;
 
 UCLASS()
-class SLASH_API ASlashCharacter : public ACharacter
+class SLASH_API ASlashCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -56,22 +54,18 @@ protected:
 	void Look(const FInputActionValue& Value);
 	virtual void Jump() override;
 	void EKeyPressed();
-	void Attack();
+	virtual void Attack() override;
 
 	/* Play Montage Functions */
-	void PlayAttackMontage();
-
+	virtual void PlayAttackMontage() override;
 	void PlayEquipMontage(FName SectionName);
 	
 	// Functions for Attack Notify
-	UFUNCTION(BlueprintCallable)
-	void AttackEnd();
+	virtual void AttackEnd() override;
 	UFUNCTION(BlueprintCallable)
 	void EnableCombo();
 	UFUNCTION(BlueprintCallable)
 	void DisableCombo();
-	UFUNCTION(BlueprintCallable)
-	void SetupWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType);
 	
 	// Functions for Arm Notify
 	UFUNCTION(BlueprintCallable)
@@ -80,6 +74,7 @@ protected:
 	void Disarm();
 	UFUNCTION(BlueprintCallable)
 	void FinishArming();
+	
 private:
 	// Character States
 	UPROPERTY(VisibleInstanceOnly)
@@ -87,11 +82,6 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly)
 	EActionState ActionState = EActionState::EAS_Unoccupied;
-	
-	int32 AttackIndex = 0;
-	bool bCanCombo = false;
-	FVector2D LastInputAxis = FVector2D::ZeroVector;
-	void RotateToInputDirection();
 	
 	// Components
 	UPROPERTY(VisibleAnywhere)
@@ -112,20 +102,19 @@ private:
 	void InteractWithItem();
 	
 	// Weapon
-	UPROPERTY(VisibleInstanceOnly,Category=Weapon)
-	AWeapon* EquippedWeapon;
 	void EquipWeapon();
-
 	FORCEINLINE bool CanArm() const { return ActionState == EActionState::EAS_Unoccupied && 
 			CharacterState == ECharacterState::ECS_Unequipped && EquippedWeapon; }
-
 	FORCEINLINE bool CanDisarm() const { return ActionState == EActionState::EAS_Unoccupied &&
 			CharacterState == ECharacterState::ECS_Equipped;}
 	
-	// Animation montages
-	UPROPERTY(EditDefaultsOnly, Category = Montages)
-	UAnimMontage* AttackMontage;
+	// Attack
+	int32 AttackIndex = 0;
+	bool bCanCombo = false;
+	FVector2D LastInputAxis = FVector2D::ZeroVector;
+	void RotateToInputDirection();
 	
+	// Animation montages
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	UAnimMontage* EquipMontage;
 public:

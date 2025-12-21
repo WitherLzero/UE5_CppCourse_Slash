@@ -72,7 +72,7 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 		TraceTypeQuery1,
 		false,
 		ActorsToIgnore,
-		EDrawDebugTrace::Type::ForDuration,
+		EDrawDebugTrace::Type::None,
 		BoxHit,
 		true);
 	

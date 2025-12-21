@@ -8,7 +8,6 @@
 #include "Components/AttributeComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "AIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -48,7 +47,6 @@ void AEnemy::BeginPlay()
 	
 	EnemyController = Cast<AAIController>(GetController());
 	MoveToTarget(PatrolTarget);
-	
 	
 	
 }
@@ -110,18 +108,13 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 			HealthBarComponent->SetHealthPercent(Attributes->GetHealthPercent());
 		}
 	}
+	CombatTarget = EventInstigator->GetPawn();
+	EnemyState = EEnemyState::EES_Chasing;
+	GetCharacterMovement()->MaxWalkSpeed = 300.f;
+	
 	return DamageAmount;	
 }
 
-void AEnemy::PlayHitReactMontage(const FName SectionName)
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && HitReactMontage)
-	{
-		AnimInstance->Montage_Play(HitReactMontage);
-		AnimInstance->Montage_JumpToSection(SectionName,HitReactMontage);
-	}
-}
 
 void AEnemy::PlayDeathMontage()
 {
@@ -167,45 +160,6 @@ void AEnemy::PawnSeen(APawn* Pawn)
 	}
 }
 
-
-double AEnemy::CalculateImpactAngle(const FVector& ImpactLocation)
-{
-	const FVector Forward = GetActorForwardVector();
-	const FVector ImpactPoint_Horizontal = FVector(ImpactLocation.X,ImpactLocation.Y,GetActorLocation().Z);
-	const FVector ToHit = (ImpactPoint_Horizontal - GetActorLocation()).GetSafeNormal();
-	
-	/* cosTheta = A dot B    
-	 * Theta = acos ( cosTheta ) */
-	double Theta = FMath::Acos(FVector::DotProduct(Forward,ToHit));
-	Theta = FMath::RadiansToDegrees(Theta);
-	
-	// If Hit from right, Crossproduct points down ( left-hand rule )
-	const FVector CrossProduct = FVector::CrossProduct(Forward,ToHit);
-	if (CrossProduct.Z < 0.f)
-	{
-		Theta*= -1.f;
-	}
-	
-	return Theta;
-}
-
-void AEnemy::DirectionalHitReact(double Theta)
-{
-	FName Section = HitReactSections.Back;
-	if (Theta >= -45.f && Theta < 45.f)
-	{
-		Section = HitReactSections.Front;
-	}
-	else if (Theta >= -135.f && Theta < -45.f)
-	{
-		Section = HitReactSections.Left;
-	}
-	else if (Theta >= 45.f && Theta < 135.f)
-	{
-		Section = HitReactSections.Right;
-	}
-	PlayHitReactMontage(Section);
-}
 
 void AEnemy::CheckCombatTarget()
 {
