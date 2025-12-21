@@ -3,8 +3,10 @@
 
 #include "Framework/BaseCharacter.h"
 
+#include "Components/AttributeComponent.h"
 #include "Components/BoxComponent.h"
 #include "Items/Weapons/Weapon.h"
+#include "Kismet/GameplayStatics.h"
 
 
 ABaseCharacter::ABaseCharacter()
@@ -20,6 +22,14 @@ void ABaseCharacter::BeginPlay()
 
 void ABaseCharacter::Attack()
 {
+}
+
+void ABaseCharacter::HandleDamage(float Damage)
+{
+	if (Attributes)
+	{
+		Attributes->ReceiveDamage(Damage);
+	}
 }
 
 void ABaseCharacter::AttackEnd()
@@ -72,6 +82,22 @@ double ABaseCharacter::CalculateImpactAngle(const FVector& ImpactLocation)
 	}
 	
 	return Theta;
+}
+
+void ABaseCharacter::PlayHitSound(const FVector& Location) const
+{
+	if (HitSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this,HitSound,Location);
+	}
+}
+
+void ABaseCharacter::SpawnHitParticles(const FVector& Location) const
+{
+	if (HitParticles)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(this,HitParticles,ImpactLocation);
+	}
 }
 
 void ABaseCharacter::PlayAttackMontage()

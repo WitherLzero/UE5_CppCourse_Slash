@@ -42,6 +42,7 @@ protected:
 	 *  Combat
 	 */
 	virtual void Attack();
+	virtual void HandleDamage(float Damage);
 	 // Functions for Notify
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackEnd();
@@ -51,6 +52,14 @@ protected:
 	
 	void DirectionalHitReact(double Theta);
 	double CalculateImpactAngle(const FVector& ImpactLocation);
+	
+	
+	/*
+	 *  FXs Functions
+	 */
+	void PlayHitSound(const FVector& Location) const;
+	void SpawnHitParticles(const FVector& Location) const;
+	
 	
 	/*
 	 *  Play Montage Functions
@@ -98,4 +107,6 @@ protected:
 private:
 
 public:
+	FORCEINLINE void SetWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }
+	
 };

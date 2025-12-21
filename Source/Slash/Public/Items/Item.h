@@ -64,7 +64,7 @@ protected:
 	virtual void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	// Empty Interact
-	virtual void Interact(ASlashCharacter* Caller) override {}
+	virtual void Interact(ABaseCharacter* Caller) override {}
 	
 	
 private:

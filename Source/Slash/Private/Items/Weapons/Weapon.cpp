@@ -4,6 +4,7 @@
 #include "Items/Weapons/Weapon.h"
 
 #include "Characters/SlashCharacter.h"
+#include "Framework/BaseCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Interfaces/HitInterface.h"
@@ -95,14 +96,24 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 	}
 }
 
-void AWeapon::Interact(ASlashCharacter* Caller)
+void AWeapon::Equipped(ABaseCharacter* Caller, FName SocketName)
 {
-	AttachMeshToSocket(Caller->GetMesh(),FName("RightHandSocket"));
+	AttachMeshToSocket(Caller->GetMesh(),SocketName);
 	ItemState = EItemState::EIS_Equipped;
 	this->SetOwner(Caller);
 	this->SetInstigator(Caller);
 	Caller->SetWeapon(this);
-	Caller->SetCharacterState(ECharacterState::ECS_Equipped);
+}
+
+void AWeapon::Interact(ABaseCharacter* Caller)
+{
+	if (!Caller) return;
+	Equipped(Caller,FName("RightHandSocket"));
+	
+	if (ASlashCharacter* SlashCharacter = Cast<ASlashCharacter>(Caller))
+	{
+		SlashCharacter->SetCharacterState(ECharacterState::ECS_Equipped);
+	}
 
 	if (EquipSound)
 	{

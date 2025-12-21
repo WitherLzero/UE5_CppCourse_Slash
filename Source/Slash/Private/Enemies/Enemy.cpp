@@ -4,14 +4,16 @@
 #include "Enemies/Enemy.h"
 
 #include "Components/CapsuleComponent.h"
-#include "Animation/AnimMontage.h"
 #include "Components/AttributeComponent.h"
 #include "HUD/HealthBarComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "AIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Perception/PawnSensingComponent.h"
+
+#include "Items/Weapons/Weapon.h"
+#include "Animation/AnimMontage.h"
+#include "Kismet/GameplayStatics.h"
+#include "AIController.h"
 
 
 AEnemy::AEnemy()
@@ -35,23 +37,24 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	if (HealthBarComponent)
-	{
-		HealthBarComponent->SetHealthPercent(Attributes->GetHealthPercent());
-	}
+	UpdateHealth();
+	ShowHealthBar(false);
 
 	if (PawnSensing)
 	{
 		PawnSensing->OnSeePawn.AddDynamic(this,&AEnemy::PawnSeen);
 	}
+
+	if (GetWorld() && WeaponClass)
+	{
+		EquippedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
+		EquippedWeapon->Equipped(this,FName("RightHandSocket"));
+	}
 	
 	EnemyController = Cast<AAIController>(GetController());
 	MoveToTarget(PatrolTarget);
 	
-	
 }
-
-
 
 void AEnemy::Tick(float DeltaTime)
 {
@@ -61,7 +64,7 @@ void AEnemy::Tick(float DeltaTime)
 	DrawDebugSphere(GetWorld(),GetActorLocation(),AttackRadius,12,FColor::Red,false);
 	DrawDebugSphere(GetWorld(),GetActorLocation(),CombatRadius,12,FColor::Blue,false);
 
-	if (EnemyState != EEnemyState::EES_Patrolling)
+	if (!IsPatrolling())
 	{
 		CheckCombatTarget();
 	}
@@ -69,12 +72,11 @@ void AEnemy::Tick(float DeltaTime)
 	{
 		HandlePatrol();
 	}
-	
-	
 }
 
 void AEnemy::GetHit_Implementation(const FVector& ImpactLocation)
 {
+	ShowHealthBar(true);
 	if (Attributes->IsAlive())
 	{
 		double Theta = CalculateImpactAngle(ImpactLocation);
@@ -85,36 +87,38 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactLocation)
 		PlayDeathMontage();
 	}
 
-	if (HitSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this,HitSound,ImpactLocation);
-	}
-	if (HitParticles)
-	{
-		UGameplayStatics::SpawnEmitterAtLocation(this,HitParticles,ImpactLocation);
-	}
-	
+	PlayHitSound(ImpactLocation);
+	SpawnHitParticles(ImpactLocation);
 	
 }
 
 float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
 	AActor* DamageCauser)
 {
-	if (Attributes)
-	{
-		Attributes->ReceiveDamage(DamageAmount);
-		if (HealthBarComponent)
-		{
-			HealthBarComponent->SetHealthPercent(Attributes->GetHealthPercent());
-		}
-	}
+	HandleDamage(DamageAmount);
 	CombatTarget = EventInstigator->GetPawn();
-	EnemyState = EEnemyState::EES_Chasing;
-	GetCharacterMovement()->MaxWalkSpeed = 300.f;
+	StartChasing();
 	
 	return DamageAmount;	
 }
 
+void AEnemy::Attack()
+{
+	Super::Attack();
+	PlayAttackMontage();
+}
+
+void AEnemy::HandleDamage(float Damage)
+{
+	Super::HandleDamage(Damage);
+	UpdateHealth();
+}
+
+void AEnemy::PlayAttackMontage()
+{
+	Super::PlayAttackMontage();
+	
+}
 
 void AEnemy::PlayDeathMontage()
 {
@@ -130,10 +134,7 @@ void AEnemy::PlayDeathMontage()
 			AnimInstance->Montage_JumpToSection(SectionName,DeathMontage);
 			
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			if (HealthBarComponent)
-			{
-				HealthBarComponent->SetVisibility(false);
-			}
+			ShowHealthBar(false);
 			
 			const float SectionTime = DeathMontage->GetSectionLength(Selection);
 			GetWorldTimerManager().SetTimer(DeathTimer,this,&AEnemy::DeathEnd,SectionTime);
@@ -148,14 +149,10 @@ void AEnemy::PawnSeen(APawn* Pawn)
 	if (Pawn->ActorHasTag(FName("Player")))
 	{
 		CombatTarget = Pawn;
-		UE_LOG(LogTemp,Warning,TEXT("See Player"))
 		if (InTargetRange(CombatTarget,CombatRadius))
 		{
-			UE_LOG(LogTemp,Warning,TEXT("In Combat Range, Start chasing"))
-			EnemyState = EEnemyState::EES_Chasing;
 			GetWorldTimerManager().ClearTimer(PatrolTimer);
-			GetCharacterMovement()->MaxWalkSpeed = 300.f;
-			MoveToTarget(CombatTarget);
+			StartChasing();
 		}
 	}
 }
@@ -163,24 +160,17 @@ void AEnemy::PawnSeen(APawn* Pawn)
 
 void AEnemy::CheckCombatTarget()
 {
-	if (!InTargetRange(CombatTarget,CombatRadius) && EnemyState != EEnemyState::EES_Patrolling)
+	if (IsOutsideCombatRadius() && !IsPatrolling())
 	{
-		UE_LOG(LogTemp,Warning,TEXT("Chasing, but lose interest."))
 		CombatTarget = nullptr;
-		EnemyState = EEnemyState::EES_Patrolling;
-		GetCharacterMovement()->MaxWalkSpeed = 125.f;
-		MoveToTarget(PatrolTarget);
-	}else if (!InTargetRange(CombatTarget,AttackRadius) && EnemyState != EEnemyState::EES_Chasing)
+		StartPatrolling();
+	}else if ( IsOutsideAttackRadius() && !IsChasing())
 	{
-		UE_LOG(LogTemp,Warning,TEXT("Chasing outside attack range"))
-		EnemyState = EEnemyState::EES_Chasing;
-		GetCharacterMovement()->MaxWalkSpeed = 300.f;
-		MoveToTarget(CombatTarget);
-	}else if (InTargetRange(CombatTarget,AttackRadius) && EnemyState != EEnemyState::EES_Attacking)
+		StartChasing();
+	}else if ( IsInsideAttackRadius() && !IsAttacking())
 	{
 		EnemyState = EEnemyState::EES_Attacking;
-		UE_LOG(LogTemp,Warning,TEXT("Attacking inside attack range"))
-		
+		Attack();
 	}
 }
 
@@ -192,6 +182,22 @@ void AEnemy::HandlePatrol()
 		{
 			GetWorldTimerManager().SetTimer(PatrolTimer,this,&AEnemy::PatrolWaitEnd,3.f);
 		}
+	}
+}
+
+void AEnemy::ShowHealthBar(bool bShow)
+{
+	if (HealthBarComponent)
+	{
+		HealthBarComponent->SetVisibility(bShow);
+	}
+}
+
+void AEnemy::UpdateHealth()
+{
+	if (HealthBarComponent)
+	{
+		HealthBarComponent->SetHealthPercent(Attributes->GetHealthPercent());
 	}
 }
 
@@ -232,6 +238,20 @@ AActor* AEnemy::SelectPatrolTarget()
 	return nullptr;
 }
 
+void AEnemy::StartPatrolling()
+{
+	EnemyState = EEnemyState::EES_Patrolling;
+	GetCharacterMovement()->MaxWalkSpeed = PatrollingSpeed;
+	MoveToTarget(PatrolTarget);
+}
+
+void AEnemy::StartChasing()
+{
+	EnemyState = EEnemyState::EES_Chasing;
+	GetCharacterMovement()->MaxWalkSpeed = ChasingSpeed;
+	MoveToTarget(CombatTarget);
+}
+
 void AEnemy::DeathEnd()
 {
 	GetMesh()->bPauseAnims = true;
@@ -246,7 +266,3 @@ void AEnemy::PatrolWaitEnd()
 }
 
 
-void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}

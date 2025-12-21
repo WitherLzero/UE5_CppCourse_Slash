@@ -31,7 +31,7 @@ protected:
 	void OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	// Interact
-	virtual void Interact(ASlashCharacter* Caller) override;
+	virtual void Interact(ABaseCharacter* Caller) override;
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void ApplyField(const FVector& FieldLocation);
@@ -54,5 +54,7 @@ private:
 
 public:
 	FORCEINLINE UBoxComponent* GetWeaponBox() const { return WeaponBox; }
+	void Equipped(ABaseCharacter* Caller, FName SocketName);
+	
 	
 };

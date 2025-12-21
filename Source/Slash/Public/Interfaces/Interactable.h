@@ -6,7 +6,7 @@
 #include "UObject/Interface.h"
 #include "Interactable.generated.h"
 
-class ASlashCharacter;
+class ABaseCharacter;
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UInteractable : public UInterface
@@ -23,5 +23,5 @@ class SLASH_API IInteractable
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void Interact(ASlashCharacter* Caller) = 0;
+	virtual void Interact(class ABaseCharacter* Caller) = 0;
 };
