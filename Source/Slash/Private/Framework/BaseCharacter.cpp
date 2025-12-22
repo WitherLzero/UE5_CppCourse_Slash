@@ -24,6 +24,10 @@ void ABaseCharacter::Attack()
 {
 }
 
+void ABaseCharacter::Die()
+{
+}
+
 void ABaseCharacter::HandleDamage(float Damage)
 {
 	if (Attributes)

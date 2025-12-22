@@ -42,6 +42,7 @@ protected:
 	 *  Combat
 	 */
 	virtual void Attack();
+	virtual void Die();
 	virtual void HandleDamage(float Damage);
 	 // Functions for Notify
 	UFUNCTION(BlueprintCallable)

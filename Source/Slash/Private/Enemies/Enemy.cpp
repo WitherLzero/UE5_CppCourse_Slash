@@ -63,8 +63,8 @@ void AEnemy::Tick(float DeltaTime)
 	// debug
 	DrawDebugSphere(GetWorld(),GetActorLocation(),AttackRadius,12,FColor::Red,false);
 	DrawDebugSphere(GetWorld(),GetActorLocation(),CombatRadius,12,FColor::Blue,false);
-
-	if (Attributes->IsAlive())
+	
+	if (!IsDead())
 	{
 		if (!IsPatrolling())
 		{
@@ -80,14 +80,14 @@ void AEnemy::Tick(float DeltaTime)
 void AEnemy::GetHit_Implementation(const FVector& ImpactLocation)
 {
 	ShowHealthBar(true);
-	if (Attributes->IsAlive())
+	if (!IsDead())
 	{
 		double Theta = CalculateImpactAngle(ImpactLocation);
 		DirectionalHitReact(Theta);
 	}
 	else
 	{
-		PlayDeathMontage();
+		Die();
 	}
 
 	PlayHitSound(ImpactLocation);
@@ -99,21 +99,43 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 	AActor* DamageCauser)
 {
 	HandleDamage(DamageAmount);
-	CombatTarget = EventInstigator->GetPawn();
-	StartChasing();
-	
+	ClearTimer(PatrolTimer);
+	if (!IsDead())
+	{
+		CombatTarget = EventInstigator->GetPawn();
+		StartChasing();
+	}
 	return DamageAmount;	
 }
 
 void AEnemy::Attack()
 {
+	EnemyState = EEnemyState::EES_Attacking;
 	Super::Attack();
 	PlayAttackMontage();
+}
+
+void AEnemy::AttackEnd()
+{
+	EnemyState = EEnemyState::EES_Unoccupied;
+	Super::AttackEnd();
+	HandleCombat();
+}
+
+void AEnemy::Die()
+{
+	Super::Die();
+	ClearTimer(AttackTimer);
+	ClearTimer(PatrolTimer);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ShowHealthBar(false);
+	PlayDeathMontage();
 }
 
 void AEnemy::HandleDamage(float Damage)
 {
 	Super::HandleDamage(Damage);
+	if (!Attributes->IsAlive()) EnemyState = EEnemyState::EES_Dead;
 	UpdateHealth();
 }
 
@@ -133,9 +155,6 @@ void AEnemy::PlayDeathMontage()
 	
 	if (bPlayed)
 	{
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		ShowHealthBar(false);
-		
 		const float SectionTime = GetMontageSectionDuration(DeathMontage,SectionName);
 		GetWorldTimerManager().SetTimer(DeathTimer,this,&AEnemy::DeathEnd,SectionTime);
 	}
@@ -144,13 +163,13 @@ void AEnemy::PlayDeathMontage()
 void AEnemy::PawnSeen(APawn* Pawn)
 {
 	//TO DO: Implement combat logic when notice players
-	if (EnemyState != EEnemyState::EES_Patrolling) return;
+	if (!IsPatrolling() || IsDead()) return;
 	if (Pawn->ActorHasTag(FName("Player")))
 	{
 		CombatTarget = Pawn;
-		if (InTargetRange(CombatTarget,CombatRadius))
+		if (!IsOutsideCombatRadius())
 		{
-			GetWorldTimerManager().ClearTimer(PatrolTimer);
+			ClearTimer(PatrolTimer);
 			StartChasing();
 		}
 	}
@@ -159,20 +178,20 @@ void AEnemy::PawnSeen(APawn* Pawn)
 
 void AEnemy::HandleCombat()
 {
-	if (IsOutsideCombatRadius() && !IsPatrolling())
+	if (IsOutsideCombatRadius())
 	{
+		ClearTimer(AttackTimer);
 		CombatTarget = nullptr;
-		// TEMP: Use attack state to avoid sliding
-		//if (!IsAttacking())
+		if (!IsAttacking())
 		StartPatrolling();
 	}else if ( IsOutsideAttackRadius() && !IsChasing())
 	{
-		//if (!IsAttacking())
+		ClearTimer(AttackTimer);
+		if (!IsAttacking())
 		StartChasing();
-	}else if ( IsInsideAttackRadius() && !IsAttacking())
+	}else if ( IsInsideAttackRadius() && !IsAttackWindow() &&!IsAttacking())
 	{
-		EnemyState = EEnemyState::EES_Attacking;
-		Attack();
+		StartAttacking();
 	}
 }
 
@@ -185,6 +204,11 @@ void AEnemy::HandlePatrol()
 			GetWorldTimerManager().SetTimer(PatrolTimer,this,&AEnemy::PatrolWaitEnd,3.f);
 		}
 	}
+}
+
+void AEnemy::ClearTimer(FTimerHandle& TimerHandle) const
+{
+	GetWorldTimerManager().ClearTimer(TimerHandle);
 }
 
 void AEnemy::ShowHealthBar(bool bShow)
@@ -252,6 +276,13 @@ void AEnemy::StartChasing()
 	EnemyState = EEnemyState::EES_Chasing;
 	GetCharacterMovement()->MaxWalkSpeed = ChasingSpeed;
 	MoveToTarget(CombatTarget);
+}
+
+void AEnemy::StartAttacking()
+{
+	EnemyState = EEnemyState::EES_AttackWindow;
+	const float AttackTime = FMath::RandRange(AttackMin,AttackMax);
+	GetWorldTimerManager().SetTimer(AttackTimer,this,&AEnemy::Attack,AttackTime);
 }
 
 void AEnemy::DeathEnd()

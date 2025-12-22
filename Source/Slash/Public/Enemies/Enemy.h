@@ -32,6 +32,8 @@ protected:
 
 	// Combat
 	virtual void Attack() override;
+	virtual void AttackEnd() override;
+	virtual void Die() override;
 	virtual void GetHit_Implementation(const FVector& ImpactLocation) override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void HandleDamage(float Damage) override;
@@ -53,6 +55,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AWeapon> WeaponClass;
 	
+	UPROPERTY(VisibleAnywhere)
 	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
 	
 	// Combat
@@ -66,6 +69,10 @@ private:
 	double PatrollingSpeed = 125.f;
 	UPROPERTY(EditInstanceOnly, Category = "Combat")
 	double ChasingSpeed = 300.f;
+	UPROPERTY(EditInstanceOnly, Category = "Combat")
+	float AttackMin = 0.5f;
+	UPROPERTY(EditInstanceOnly, Category = "Combat")
+	float AttackMax = 1.f;
 	UPROPERTY(EditAnywhere,Category="Combat")
 	float DeathLifeSpan = 3.f;
 	// Navigation
@@ -78,6 +85,7 @@ private:
 	// Timers
 	FTimerHandle DeathTimer;
 	FTimerHandle PatrolTimer;
+	FTimerHandle AttackTimer;
 	// Timer callbacks
 	void DeathEnd();
 	void PatrolWaitEnd();
@@ -86,6 +94,7 @@ private:
 	void HandleCombat();
 	void HandlePatrol();
 	
+	void ClearTimer(FTimerHandle& TimerHandle) const;
 
 	// Inner Helpers
 	void ShowHealthBar(bool bShow);
@@ -96,12 +105,15 @@ private:
 	AActor* SelectPatrolTarget();
 	void StartPatrolling();
 	void StartChasing();
+	void StartAttacking();
 
 	FORCEINLINE bool IsOutsideCombatRadius() const { return !InTargetRange(CombatTarget,CombatRadius); }
 	FORCEINLINE bool IsOutsideAttackRadius() const { return !InTargetRange(CombatTarget,AttackRadius); }
 	FORCEINLINE bool IsInsideAttackRadius() const { return InTargetRange(CombatTarget,AttackRadius); }
+	FORCEINLINE bool IsDead() const { return EnemyState == EEnemyState::EES_Dead;}
 	FORCEINLINE bool IsPatrolling() const { return EnemyState == EEnemyState::EES_Patrolling;}
 	FORCEINLINE bool IsChasing() const { return EnemyState == EEnemyState::EES_Chasing; }
+	FORCEINLINE bool IsAttackWindow() const { return EnemyState == EEnemyState::EES_AttackWindow; }
 	FORCEINLINE bool IsAttacking() const { return EnemyState == EEnemyState::EES_Attacking; }
 	
 	
