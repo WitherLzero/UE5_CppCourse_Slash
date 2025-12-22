@@ -66,8 +66,11 @@ protected:
 	 */
 	virtual void PlayAttackMontage();
 	virtual void PlayDeathMontage();
-	void PlayHitReactMontage(const FName SectionName);
+	void PlayHitReactMontage(const FName& SectionName);
 	
+	bool PlayMontageSection(UAnimMontage* Montage, const FName& SectionName) const;
+	float GetMontageSectionDuration(UAnimMontage* Montage, const FName& SectionName) const;
+	FName SelectRandomMontageSection(const TArray<FName>& SectionNames) const ;
 	/*
 	 *  Components
 	 */
@@ -96,15 +99,28 @@ protected:
 	UAnimMontage* AttackMontage;
 	
 	UPROPERTY(EditDefaultsOnly,Category=Montage)
-	UAnimMontage* HitReactMontage;
+	UAnimMontage* DeathMontage;
 	
 	UPROPERTY(EditDefaultsOnly,Category=Montage)
-	UAnimMontage* DeathMontage;
+	UAnimMontage* HitReactMontage;
+
+	UPROPERTY(EditAnywhere,Category=Montage, meta=(GetOptions = "GetAttackMontageSectionNames"))
+	TArray<FName> AttackMontageSections;
+	
+	UPROPERTY(EditAnywhere,Category=Montage, meta=(GetOptions = "GetDeathMontageSectionNames"))
+	TArray<FName> DeathMontageSections;
 	
 	UPROPERTY(EditDefaultsOnly,category = Montage)
 	FHitReactSections HitReactSections;
 	
 private:
+	UFUNCTION()
+	TArray<FString> GetAttackMontageSectionNames() const;
+	
+	UFUNCTION()
+	TArray<FString> GetDeathMontageSectionNames() const;
+	
+	TArray<FString> GetSectionNamesFromMontage(UAnimMontage* Montage) const;
 
 public:
 	FORCEINLINE void SetWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }

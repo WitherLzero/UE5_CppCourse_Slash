@@ -83,7 +83,7 @@ private:
 	void PatrolWaitEnd();
 
 
-	void CheckCombatTarget();
+	void HandleCombat();
 	void HandlePatrol();
 	
 

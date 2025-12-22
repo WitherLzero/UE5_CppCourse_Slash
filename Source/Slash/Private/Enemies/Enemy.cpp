@@ -64,13 +64,16 @@ void AEnemy::Tick(float DeltaTime)
 	DrawDebugSphere(GetWorld(),GetActorLocation(),AttackRadius,12,FColor::Red,false);
 	DrawDebugSphere(GetWorld(),GetActorLocation(),CombatRadius,12,FColor::Blue,false);
 
-	if (!IsPatrolling())
+	if (Attributes->IsAlive())
 	{
-		CheckCombatTarget();
-	}
-	else
-	{
-		HandlePatrol();
+		if (!IsPatrolling())
+		{
+			HandleCombat();
+		}
+		else
+		{
+			HandlePatrol();
+		}
 	}
 }
 
@@ -117,28 +120,24 @@ void AEnemy::HandleDamage(float Damage)
 void AEnemy::PlayAttackMontage()
 {
 	Super::PlayAttackMontage();
-	
+	const FName SectionName = SelectRandomMontageSection(AttackMontageSections);
+	PlayMontageSection(AttackMontage,SectionName);
 }
 
 void AEnemy::PlayDeathMontage()
 {
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && DeathMontage)
+	
+	// TO-DO: Fix play death montage twice while getting hit twice
+	const FName SectionName = SelectRandomMontageSection(DeathMontageSections);
+	const bool bPlayed = PlayMontageSection(DeathMontage,SectionName);
+	
+	if (bPlayed)
 	{
-		const int NumSections = DeathMontage->GetNumSections();
-		if (NumSections > 0)
-		{
-			const int32 Selection = FMath::RandRange(0,NumSections - 1);
-			FName SectionName = DeathMontage->GetSectionName(Selection);
-			AnimInstance->Montage_Play(DeathMontage);
-			AnimInstance->Montage_JumpToSection(SectionName,DeathMontage);
-			
-			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			ShowHealthBar(false);
-			
-			const float SectionTime = DeathMontage->GetSectionLength(Selection);
-			GetWorldTimerManager().SetTimer(DeathTimer,this,&AEnemy::DeathEnd,SectionTime);
-		}
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		ShowHealthBar(false);
+		
+		const float SectionTime = GetMontageSectionDuration(DeathMontage,SectionName);
+		GetWorldTimerManager().SetTimer(DeathTimer,this,&AEnemy::DeathEnd,SectionTime);
 	}
 }
 
@@ -158,14 +157,17 @@ void AEnemy::PawnSeen(APawn* Pawn)
 }
 
 
-void AEnemy::CheckCombatTarget()
+void AEnemy::HandleCombat()
 {
 	if (IsOutsideCombatRadius() && !IsPatrolling())
 	{
 		CombatTarget = nullptr;
+		// TEMP: Use attack state to avoid sliding
+		//if (!IsAttacking())
 		StartPatrolling();
 	}else if ( IsOutsideAttackRadius() && !IsChasing())
 	{
+		//if (!IsAttacking())
 		StartChasing();
 	}else if ( IsInsideAttackRadius() && !IsAttacking())
 	{
@@ -213,7 +215,7 @@ void AEnemy::MoveToTarget(AActor* Target) const
 	if (!EnemyController || !Target) return;
 	FAIMoveRequest MoveRequest;
 	MoveRequest.SetGoalActor(Target);
-	MoveRequest.SetAcceptanceRadius(10.f);
+	MoveRequest.SetAcceptanceRadius(50.f);
 	EnemyController->MoveTo(MoveRequest);
 }
 

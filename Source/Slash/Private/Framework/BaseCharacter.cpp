@@ -96,7 +96,7 @@ void ABaseCharacter::SpawnHitParticles(const FVector& Location) const
 {
 	if (HitParticles)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(this,HitParticles,ImpactLocation);
+		UGameplayStatics::SpawnEmitterAtLocation(this,HitParticles,Location);
 	}
 }
 
@@ -108,7 +108,7 @@ void ABaseCharacter::PlayDeathMontage()
 {
 }
 
-void ABaseCharacter::PlayHitReactMontage(const FName SectionName)
+void ABaseCharacter::PlayHitReactMontage(const FName& SectionName)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && HitReactMontage)
@@ -116,6 +116,56 @@ void ABaseCharacter::PlayHitReactMontage(const FName SectionName)
 		AnimInstance->Montage_Play(HitReactMontage);
 		AnimInstance->Montage_JumpToSection(SectionName,HitReactMontage);
 	}
+}
+
+bool ABaseCharacter::PlayMontageSection(UAnimMontage* Montage, const FName& SectionName) const
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && Montage && !SectionName.IsNone())
+	{
+		AnimInstance->Montage_Play(Montage);
+		AnimInstance->Montage_JumpToSection(SectionName,Montage);
+		return true;
+	}
+	return false;
+}
+
+float ABaseCharacter::GetMontageSectionDuration(UAnimMontage* Montage, const FName& SectionName) const
+{
+	const int32 Index = DeathMontage->GetSectionIndex(SectionName);
+	return DeathMontage->GetSectionLength(Index);
+}
+
+FName ABaseCharacter::SelectRandomMontageSection(const TArray<FName>& SectionNames) const
+{
+	const int32 Num = SectionNames.Num();
+	if (Num <= 0) return FName();
+	const int32 Selection = FMath::RandRange(0,Num - 1);
+	return SectionNames[Selection];
+}
+
+
+TArray<FString> ABaseCharacter::GetAttackMontageSectionNames() const
+{
+	return GetSectionNamesFromMontage(AttackMontage);
+}
+
+TArray<FString> ABaseCharacter::GetDeathMontageSectionNames() const
+{
+	return GetSectionNamesFromMontage(DeathMontage);
+}
+
+TArray<FString> ABaseCharacter::GetSectionNamesFromMontage(UAnimMontage* Montage) const
+{
+	TArray<FString> Names;
+	if (Montage)
+	{
+		for (int32 i = 0; i < Montage->GetNumSections(); ++i)
+		{
+			Names.Add(Montage->GetSectionName(i).ToString());
+		}
+	}
+	return Names;
 }
 
 void ABaseCharacter::Tick(float DeltaTime)
