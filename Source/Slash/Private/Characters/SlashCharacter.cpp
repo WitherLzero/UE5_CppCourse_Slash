@@ -15,7 +15,6 @@
 #include "Interfaces/Interactable.h"
 
 #include "Animation/AnimMontage.h"
-#include "Components/BoxComponent.h"
 #include "Items/Weapons/Weapon.h"
 
 // Sets default values
@@ -47,9 +46,90 @@ void ASlashCharacter::BeginPlay()
 			Subsystem->AddMappingContext(EchoMappingContext,0);
 		}
 	}
-	
-	
 }
+
+// Called every frame
+void ASlashCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+// Called to bind functionality to input
+void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		EnhancedInputComponent->BindAction(MoveAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Move);
+		EnhancedInputComponent->BindAction(LookAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Look);
+		EnhancedInputComponent->BindAction(JumpAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Jump);
+		EnhancedInputComponent->BindAction(InteractAction,ETriggerEvent::Started,this,&ASlashCharacter::EKeyPressed);
+		EnhancedInputComponent->BindAction(AttackAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Attack);
+	}
+}
+
+/*
+ * <ABaseCharacter> Overrides
+ */
+
+void ASlashCharacter::Attack()
+{
+	if (!CanAttack()) return;
+	
+	// Case 1: If idle, start the first attack
+	if (ActionState == EActionState::EAS_Unoccupied)
+	{
+		AttackIndex = 0;
+		
+		RotateToInputDirection();
+		PlayAttackMontage();
+		ActionState = EActionState::EAS_Attacking;
+	}
+	// Case 2: If already attacking and within valid combo window (Instant Transition)
+	else if (ActionState == EActionState::EAS_Attacking && bCanCombo)
+	{
+		bCanCombo = false; // Close window immediately to prevent double trigger
+		AttackIndex++;
+		// Reset combo loop if exceeding max sections
+		if (AttackIndex > AttackMontageSections.Num())
+		{
+			AttackIndex = 0;
+		}
+		RotateToInputDirection();
+		PlayAttackMontage();
+	}
+}
+
+void ASlashCharacter::AttackEnd()
+{
+	ActionState = EActionState::EAS_Unoccupied;
+	bCanCombo = false; // ensure window is closed
+	AttackIndex = 0;   // reset index
+}
+
+void ASlashCharacter::PlayAttackMontage()
+{
+	const FName SectionName = SelectMontageSection(AttackMontageSections,AttackIndex);
+	PlayMontageSection(AttackMontage,SectionName);
+}
+
+bool ASlashCharacter::CanAttack() const
+{
+	return CharacterState != ECharacterState::ECS_Unequipped &&
+		AttackMontageSections.Num() > 0;
+}
+
+void ASlashCharacter::GetHit_Implementation(const FVector& ImpactLocation)
+{
+	UE_LOG(LogTemp,Warning,TEXT("Character Get Hit!"));
+	PlayHitSound(ImpactLocation);
+	SpawnHitParticles(ImpactLocation);
+}
+
+/*
+ * Input Handlers
+ */
 
 void ASlashCharacter::Move(const FInputActionValue& Value)
 {
@@ -94,86 +174,9 @@ void ASlashCharacter::EKeyPressed()
 	}
 }
 
-void ASlashCharacter::Attack()
-{
-	// Ensure character has weapon equipped
-	if (CharacterState == ECharacterState::ECS_Unequipped) return;
-	
-	// Case 1: If idle, start the first attack
-	if (ActionState == EActionState::EAS_Unoccupied)
-	{
-		RotateToInputDirection();
-		PlayAttackMontage();
-		ActionState = EActionState::EAS_Attacking;
-	}
-	// Case 2: If already attacking and within valid combo window (Instant Transition)
-	else if (ActionState == EActionState::EAS_Attacking && bCanCombo)
-	{
-		bCanCombo = false; // Close window immediately to prevent double trigger
-		AttackIndex++;
-		
-		// Reset combo loop if exceeding max sections
-		if (AttackIndex > 2)
-		{
-			AttackIndex = 0;
-		}
-		RotateToInputDirection();
-		PlayAttackMontage();
-	}
-}
-
-void ASlashCharacter::PlayAttackMontage()
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && AttackMontage)
-	{
-		AnimInstance->Montage_Play(AttackMontage);
-		FName SectionName = FName();
-
-		// Map current index to specific Montage Section Name
-		switch (AttackIndex)
-		{
-		case 0:
-			SectionName = FName("Attack1");
-			break;
-		case 1:
-			SectionName = FName("Attack2");
-			break;
-		case 2:
-			SectionName = FName("Attack3");
-			break;
-		default:
-			break;
-		}
-
-		// Immediately jump to the start of the next attack animation
-		AnimInstance->Montage_JumpToSection(SectionName);
-	}
-}
-
-void ASlashCharacter::PlayEquipMontage(FName SectionName)
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && EquipMontage)
-	{
-		AnimInstance->Montage_Play(EquipMontage);
-		AnimInstance->Montage_JumpToSection(SectionName);
-	}
-}
-
-
 /*
- * Inner Helpers
+ * Combat Handlers
  */
-void ASlashCharacter::InteractWithItem()
-{
-	IInteractable* Interface = Cast<IInteractable>(OverlappingItem);
-	if (Interface)
-	{
-		Interface->Interact(this);
-		OverlappingItem = nullptr;
-	}	
-}
 
 void ASlashCharacter::EquipWeapon()
 {
@@ -190,12 +193,19 @@ void ASlashCharacter::EquipWeapon()
 	}
 }
 
-void ASlashCharacter::AttackEnd()
+void ASlashCharacter::PlayEquipMontage(FName SectionName)
 {
-	ActionState = EActionState::EAS_Unoccupied;
-	bCanCombo = false; // ensure window is closed
-	AttackIndex = 0;   // reset index
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && EquipMontage)
+	{
+		AnimInstance->Montage_Play(EquipMontage);
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
 }
+
+/*
+ * Anim Notifies
+ */
 
 void ASlashCharacter::EnableCombo()
 {
@@ -206,7 +216,6 @@ void ASlashCharacter::DisableCombo()
 {
 	bCanCombo = false;
 }
-
 
 void ASlashCharacter::Arm()
 {
@@ -229,6 +238,39 @@ void ASlashCharacter::FinishArming()
 	ActionState = EActionState::EAS_Unoccupied;
 }
 
+/*
+ * Internal Helpers
+ */
+
+void ASlashCharacter::SetupComponents()
+{
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm->SetupAttachment(GetRootComponent());
+	SpringArm->TargetArmLength = 300.f;
+	SpringArm->bUsePawnControlRotation = true;
+	
+	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ViewCamera"));
+	ViewCamera->SetupAttachment(SpringArm);
+	
+	Hair = CreateDefaultSubobject<UGroomComponent>(TEXT("Hair"));
+	Hair->SetupAttachment(GetMesh());
+	Hair->AttachmentName = TEXT("head");
+	
+	Eyebrows = CreateDefaultSubobject<UGroomComponent>(TEXT("Eyebrows"));
+	Eyebrows->SetupAttachment(GetMesh());
+	Eyebrows->AttachmentName = TEXT("head");
+}
+
+void ASlashCharacter::InteractWithItem()
+{
+	IInteractable* Interface = Cast<IInteractable>(OverlappingItem);
+	if (Interface)
+	{
+		Interface->Interact(this);
+		OverlappingItem = nullptr;
+	}	
+}
+
 void ASlashCharacter::RotateToInputDirection()
 {
 	if (LastInputAxis.IsNearlyZero()) return;
@@ -247,49 +289,4 @@ void ASlashCharacter::RotateToInputDirection()
 			LastInputAxis = FVector2D::ZeroVector;
 		}
 	}
-	
-	
-}
-
-
-// Called every frame
-void ASlashCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-// Called to bind functionality to input
-void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		EnhancedInputComponent->BindAction(MoveAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Move);
-		EnhancedInputComponent->BindAction(LookAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Look);
-		EnhancedInputComponent->BindAction(JumpAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Jump);
-		EnhancedInputComponent->BindAction(InteractAction,ETriggerEvent::Started,this,&ASlashCharacter::EKeyPressed);
-		EnhancedInputComponent->BindAction(AttackAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Attack);
-	}
-}
-
-
-// Helper functions
-void ASlashCharacter::SetupComponents()
-{
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArm->SetupAttachment(GetRootComponent());
-	SpringArm->TargetArmLength = 300.f;
-	SpringArm->bUsePawnControlRotation = true;
-	
-	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ViewCamera"));
-	ViewCamera->SetupAttachment(SpringArm);
-	
-	Hair = CreateDefaultSubobject<UGroomComponent>(TEXT("Hair"));
-	Hair->SetupAttachment(GetMesh());
-	Hair->AttachmentName = TEXT("head");
-	
-	Eyebrows = CreateDefaultSubobject<UGroomComponent>(TEXT("Eyebrows"));
-	Eyebrows->SetupAttachment(GetMesh());
-	Eyebrows->AttachmentName = TEXT("head");
 }

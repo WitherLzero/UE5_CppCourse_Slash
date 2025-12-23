@@ -39,6 +39,11 @@ void AWeapon::BeginPlay()
 	WeaponBox->OnComponentBeginOverlap.AddDynamic(this,&AWeapon::OnBoxOverlap);	
 }
 
+void AWeapon::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -51,35 +56,22 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	Super::OnSphereEndOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
 }
 
+
+
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                           int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	const FVector Start = BoxTraceStart->GetComponentLocation();
-	const FVector End = BoxTraceEnd->GetComponentLocation();
-	
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(this);
-	for (AActor* Actor : IgnoreActors)
-	{
-		ActorsToIgnore.AddUnique(Actor);
-	}
 	FHitResult BoxHit;
 	
-	UKismetSystemLibrary::BoxTraceSingle(
-		this,
-		Start,End,
-		FVector(5.f),
-		BoxTraceStart->GetComponentRotation(),
-		TraceTypeQuery1,
-		false,
-		ActorsToIgnore,
-		EDrawDebugTrace::Type::None,
-		BoxHit,
-		true);
+	if (IsFriendly(OtherActor)) return;
+	
+	ExecuteBoxTrace(BoxHit);
 	
 	if (BoxHit.GetActor())
-	{
-		ApplyField(BoxHit.ImpactPoint);
+	{ 
+		FString ActorName = BoxHit.GetActor()->GetName();
+		UE_LOG(LogTemp,Warning,TEXT("ActorName: %s"),*ActorName);
+		
 		UGameplayStatics::ApplyDamage(
 			BoxHit.GetActor(),
 			Damage,
@@ -87,12 +79,8 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 			this,
 			UDamageType::StaticClass()
 			);
-		if (BoxHit.GetActor()->Implements<UHitInterface>())
-		{
-			IHitInterface::Execute_GetHit(BoxHit.GetActor(),BoxHit.ImpactPoint);
-		}
-
-		IgnoreActors.AddUnique(BoxHit.GetActor());
+		ApplyField(BoxHit.ImpactPoint);
+		ExecuteGetHit(BoxHit);
 	}
 }
 
@@ -126,8 +114,54 @@ void AWeapon::Interact(ABaseCharacter* Caller)
 	
 }
 
-void AWeapon::Tick(float DeltaTime)
+void AWeapon::ExecuteBoxTrace(FHitResult& OutBoxHit)
 {
-	Super::Tick(DeltaTime);
+	const FVector Start = BoxTraceStart->GetComponentLocation();
+	const FVector End = BoxTraceEnd->GetComponentLocation();
+	
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+	ActorsToIgnore.Add(GetOwner());
+	for (AActor* Actor : IgnoreActors)
+	{
+		ActorsToIgnore.AddUnique(Actor);
+	}
+	
+	UKismetSystemLibrary::BoxTraceSingle(
+		this,
+		Start,End,
+		FVector(5.f),
+		BoxTraceStart->GetComponentRotation(),
+		TraceTypeQuery1,
+		false,
+		ActorsToIgnore,
+		bShowBoxDebug? EDrawDebugTrace::ForDuration : EDrawDebugTrace::Type::None,
+		OutBoxHit,
+		true);
+	
+	IgnoreActors.AddUnique(OutBoxHit.GetActor());
 }
+
+void AWeapon::ExecuteGetHit(const FHitResult& BoxHit) const
+{
+	if (BoxHit.GetActor()->Implements<UHitInterface>())
+	{
+		IHitInterface::Execute_GetHit(BoxHit.GetActor(),BoxHit.ImpactPoint);
+	}
+}
+
+bool AWeapon::IsFriendly(AActor* OtherActor) const
+{
+	if (!GetOwner() && !OtherActor) return false;
+	
+	const TArray<FName>& OwnerTags = GetOwner()->Tags;
+	const TArray<FName>& OtherTags = OtherActor->Tags;
+	
+	for (const FName& Tag : OwnerTags)
+	{
+		if (OtherTags.Contains(Tag)) return true;
+	}
+	return false;
+}
+
 

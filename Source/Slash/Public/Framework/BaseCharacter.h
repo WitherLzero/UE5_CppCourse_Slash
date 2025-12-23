@@ -44,10 +44,10 @@ protected:
 	virtual void Attack();
 	virtual void Die();
 	virtual void HandleDamage(float Damage);
+	virtual bool CanAttack() const;
 	 // Functions for Notify
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackEnd();
-	
 	UFUNCTION(BlueprintCallable)
 	void SetupWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType);
 	
@@ -71,7 +71,14 @@ protected:
 	
 	bool PlayMontageSection(UAnimMontage* Montage, const FName& SectionName) const;
 	float GetMontageSectionDuration(UAnimMontage* Montage, const FName& SectionName) const;
+	FName SelectMontageSection(const TArray<FName>& SectionNames, int32 Index) const;
 	FName SelectRandomMontageSection(const TArray<FName>& SectionNames) const ;
+	
+	/*
+	 *  Helpers
+	 */
+	void InitializeMesh() const;
+	
 	/*
 	 *  Components
 	 */

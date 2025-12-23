@@ -9,15 +9,22 @@
 #include "Kismet/GameplayStatics.h"
 
 
+
 ABaseCharacter::ABaseCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	InitializeMesh();
 }
 
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+}
+
+void ABaseCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void ABaseCharacter::Attack()
@@ -34,6 +41,11 @@ void ABaseCharacter::HandleDamage(float Damage)
 	{
 		Attributes->ReceiveDamage(Damage);
 	}
+}
+
+bool ABaseCharacter::CanAttack() const
+{
+	return false;
 }
 
 void ABaseCharacter::AttackEnd()
@@ -140,12 +152,30 @@ float ABaseCharacter::GetMontageSectionDuration(UAnimMontage* Montage, const FNa
 	return DeathMontage->GetSectionLength(Index);
 }
 
+FName ABaseCharacter::SelectMontageSection(const TArray<FName>& SectionNames, int32 Index) const
+{
+	if (SectionNames.IsValidIndex(Index))
+	{
+		return SectionNames[Index];
+	}
+	return FName();
+}
+
 FName ABaseCharacter::SelectRandomMontageSection(const TArray<FName>& SectionNames) const
 {
 	const int32 Num = SectionNames.Num();
 	if (Num <= 0) return FName();
 	const int32 Selection = FMath::RandRange(0,Num - 1);
 	return SectionNames[Selection];
+}
+
+void ABaseCharacter::InitializeMesh() const
+{
+	GetMesh()->SetCollisionObjectType(ECC_WorldDynamic);
+	GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
+	GetMesh()->SetCollisionResponseToChannel(ECC_WorldDynamic,ECR_Overlap);
+	GetMesh()->SetGenerateOverlapEvents(true);
 }
 
 
@@ -170,11 +200,6 @@ TArray<FString> ABaseCharacter::GetSectionNamesFromMontage(UAnimMontage* Montage
 		}
 	}
 	return Names;
-}
-
-void ABaseCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 

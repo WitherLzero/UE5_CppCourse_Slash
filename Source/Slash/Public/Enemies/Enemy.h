@@ -11,11 +11,11 @@
 #include "_Enums/CharacterTypes.h"
 #include "Enemy.generated.h"
 
-class UPawnSensingComponent;
 class AAIController;
+class UPawnSensingComponent;
 class UHealthBarComponent;
 class UAttributeComponent;
-class UAnimMontage;
+
 
 UCLASS()
 class SLASH_API AEnemy : public ABaseCharacter
@@ -24,40 +24,86 @@ class SLASH_API AEnemy : public ABaseCharacter
 
 public:
 	AEnemy();
+	
+	/* <AActor> */
 	virtual void Tick(float DeltaTime) override;
-
+	/* </AActor> */
+	
 protected:
+	/* <AActor> */
 	virtual void BeginPlay() override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	/* </AActor> */
 
-
+	/* <ABaseCharacter> */
 	// Combat
 	virtual void Attack() override;
 	virtual void AttackEnd() override;
 	virtual void Die() override;
-	virtual void GetHit_Implementation(const FVector& ImpactLocation) override;
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void HandleDamage(float Damage) override;
-
 	// Play Montage
 	virtual void PlayAttackMontage() override;
 	virtual void PlayDeathMontage() override;
+	/* </ABaseCharacter> */
+	
+	/* <IHitInterface> */
+	virtual void GetHit_Implementation(const FVector& ImpactLocation) override;
+	/* </IHitInterface> */
+	
+	
 
-	// Callbacks
-	UFUNCTION()
-	void PawnSeen(APawn* Pawn);
 	
 private:
+	/* Main Logic */
+	UFUNCTION()
+	void PawnSeen(APawn* Pawn); // callback
+	void HandleCombat();
+	void HandlePatrol();
+
+	/* Helpers */
+	// Health
+	void ShowHealthBar(bool bShow);
+	void UpdateHealth();
+	// Behavior
+	void Initialize();
+	AActor* SelectPatrolTarget();
+	void MoveToTarget(AActor* Target) const;
+	void StartPatrolling();
+	void StartChasing();
+	void StartAttacking();
+	// Timer relevant
+	void DeathEnd(); 
+	void PatrolWaitEnd(); 
+	void ClearTimer(FTimerHandle& TimerHandle) const;
+	// Bool Condition
+	bool InTargetRange(AActor* Target, double Radius) const;
+	FORCEINLINE bool IsOutsideCombatRadius() const { return !InTargetRange(CombatTarget,CombatRadius); }
+	FORCEINLINE bool IsOutsideAttackRadius() const { return !InTargetRange(CombatTarget,AttackRadius); }
+	FORCEINLINE bool IsInsideAttackRadius() const { return InTargetRange(CombatTarget,AttackRadius); }
+	FORCEINLINE bool IsDead() const { return EnemyState == EEnemyState::EES_Dead;}
+	FORCEINLINE bool IsPatrolling() const { return EnemyState == EEnemyState::EES_Patrolling;}
+	FORCEINLINE bool IsChasing() const { return EnemyState == EEnemyState::EES_Chasing; }
+	FORCEINLINE bool IsAttackWindow() const { return EnemyState == EEnemyState::EES_AttackWindow; }
+	FORCEINLINE bool IsAttacking() const { return EnemyState == EEnemyState::EES_Attacking; }
+
+    /* Variables */
+	// Property
+	UPROPERTY(VisibleInstanceOnly)
+	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AWeapon> WeaponClass;
 	// Components
 	UPROPERTY(VisibleAnywhere)
 	UHealthBarComponent* HealthBarComponent;
 	UPROPERTY(VisibleAnywhere)
 	UPawnSensingComponent* PawnSensing;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AWeapon> WeaponClass;
-	
-	UPROPERTY(VisibleAnywhere)
-	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
-	
+	// AI Navigation
+	UPROPERTY()
+	AAIController* EnemyController;
+	UPROPERTY(EditInstanceOnly,Category="AI Navigation")
+	AActor* PatrolTarget;
+	UPROPERTY(EditInstanceOnly,Category="AI Navigation")
+	TArray<AActor*> PatrolTargets;
 	// Combat
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
 	AActor* CombatTarget;
@@ -75,50 +121,11 @@ private:
 	float AttackMax = 1.f;
 	UPROPERTY(EditAnywhere,Category="Combat")
 	float DeathLifeSpan = 3.f;
-	// Navigation
-	UPROPERTY()
-	AAIController* EnemyController;
-	UPROPERTY(EditInstanceOnly,Category="AI Navigation")
-	AActor* PatrolTarget;
-	UPROPERTY(EditInstanceOnly,Category="AI Navigation")
-	TArray<AActor*> PatrolTargets;
 	// Timers
 	FTimerHandle DeathTimer;
 	FTimerHandle PatrolTimer;
 	FTimerHandle AttackTimer;
-	// Timer callbacks
-	void DeathEnd();
-	void PatrolWaitEnd();
-
-
-	void HandleCombat();
-	void HandlePatrol();
-	
-	void ClearTimer(FTimerHandle& TimerHandle) const;
-
-	// Inner Helpers
-	void ShowHealthBar(bool bShow);
-	void UpdateHealth();
-	
-	bool InTargetRange(AActor* Target, double Radius) const;
-	void MoveToTarget(AActor* Target) const;
-	AActor* SelectPatrolTarget();
-	void StartPatrolling();
-	void StartChasing();
-	void StartAttacking();
-
-	FORCEINLINE bool IsOutsideCombatRadius() const { return !InTargetRange(CombatTarget,CombatRadius); }
-	FORCEINLINE bool IsOutsideAttackRadius() const { return !InTargetRange(CombatTarget,AttackRadius); }
-	FORCEINLINE bool IsInsideAttackRadius() const { return InTargetRange(CombatTarget,AttackRadius); }
-	FORCEINLINE bool IsDead() const { return EnemyState == EEnemyState::EES_Dead;}
-	FORCEINLINE bool IsPatrolling() const { return EnemyState == EEnemyState::EES_Patrolling;}
-	FORCEINLINE bool IsChasing() const { return EnemyState == EEnemyState::EES_Chasing; }
-	FORCEINLINE bool IsAttackWindow() const { return EnemyState == EEnemyState::EES_AttackWindow; }
-	FORCEINLINE bool IsAttacking() const { return EnemyState == EEnemyState::EES_Attacking; }
-	
-	
-	
-	
 
 public:
 };
+

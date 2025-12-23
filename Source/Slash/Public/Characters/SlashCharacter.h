@@ -24,105 +24,120 @@ class SLASH_API ASlashCharacter : public ABaseCharacter
 
 public:
 	ASlashCharacter();
+	
+	/* <AActor> */
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	/* </AActor> */
+
 	
 protected:
+	/* <AActor> */
 	virtual void BeginPlay() override;
-	
-	// Input Assets
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputMappingContext* EchoMappingContext;
-	
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputAction* MoveAction;
-	
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputAction* LookAction;
-	
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputAction* JumpAction;
-	
-	UPROPERTY(Editanywhere, BlueprintReadWrite, Category = "Input")
-	UInputAction* InteractAction;
-	
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputAction* AttackAction;
+	/* </AActor> */
 
-	// Input Functions
+	/* <ABaseCharacter> */
+	virtual void Attack() override;
+	virtual void AttackEnd() override;
+	virtual void PlayAttackMontage() override;
+	virtual bool CanAttack() const override;
+	/* </ABaseCharacter> */
+	
+	/* <IHitInterface> */
+	virtual void GetHit_Implementation(const FVector& ImpactLocation) override;
+	/* </IHitInterface> */
+
+
+	/* Input Handlers */
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	virtual void Jump() override;
 	void EKeyPressed();
-	virtual void Attack() override;
 
-	/* Play Montage Functions */
-	virtual void PlayAttackMontage() override;
+	/* Combat Handlers */
+	void EquipWeapon();
 	void PlayEquipMontage(FName SectionName);
 	
-	// Functions for Attack Notify
-	virtual void AttackEnd() override;
+	/* Anim Notifies */
 	UFUNCTION(BlueprintCallable)
 	void EnableCombo();
+	
 	UFUNCTION(BlueprintCallable)
 	void DisableCombo();
 	
-	// Functions for Arm Notify
 	UFUNCTION(BlueprintCallable)
 	void Arm();
+	
 	UFUNCTION(BlueprintCallable)
 	void Disarm();
+	
 	UFUNCTION(BlueprintCallable)
 	void FinishArming();
-	
+
+	/*
+	 * Variables: Inputs
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputMappingContext* EchoMappingContext;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* MoveAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* LookAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* JumpAction;
+	UPROPERTY(Editanywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* InteractAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* AttackAction;
+
 private:
-	// Character States
+	/* Internal Helpers */
+	void SetupComponents();
+	void InteractWithItem();
+	void RotateToInputDirection();
+	
+	/* State Checks */
+	FORCEINLINE bool CanArm() const { return ActionState == EActionState::EAS_Unoccupied && CharacterState == ECharacterState::ECS_Unequipped && EquippedWeapon; }
+	FORCEINLINE bool CanDisarm() const { return ActionState == EActionState::EAS_Unoccupied && CharacterState == ECharacterState::ECS_Equipped; }
+
+	/*
+	 * Variables: Components
+	 */
+	UPROPERTY(VisibleAnywhere)
+	USpringArmComponent* SpringArm;
+
+	UPROPERTY(VisibleAnywhere)
+	UCameraComponent* ViewCamera;
+
+	UPROPERTY(VisibleAnywhere, Category = Groom)
+	UGroomComponent* Hair;
+
+	UPROPERTY(VisibleAnywhere, Category = Groom)
+	UGroomComponent* Eyebrows;
+
+	/*
+	 * Variables: State & Logic
+	 */
+	UPROPERTY(VisibleInstanceOnly)
+	AItem* OverlappingItem;
+	
 	UPROPERTY(VisibleInstanceOnly)
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
 
 	UPROPERTY(VisibleInstanceOnly)
 	EActionState ActionState = EActionState::EAS_Unoccupied;
+
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+	UAnimMontage* EquipMontage;
 	
-	// Components
-	UPROPERTY(VisibleAnywhere)
-	USpringArmComponent* SpringArm;
-	
-	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* ViewCamera;
-	
-	UPROPERTY(VisibleAnywhere,Category=Groom)
-	UGroomComponent* Hair;
-	
-	UPROPERTY(VisibleAnywhere,Category=Groom)	
-	UGroomComponent* Eyebrows;
-	
-	// Interactables
-	UPROPERTY(VisibleInstanceOnly)
-	AItem* OverlappingItem;
-	void InteractWithItem();
-	
-	// Weapon
-	void EquipWeapon();
-	FORCEINLINE bool CanArm() const { return ActionState == EActionState::EAS_Unoccupied && 
-			CharacterState == ECharacterState::ECS_Unequipped && EquippedWeapon; }
-	FORCEINLINE bool CanDisarm() const { return ActionState == EActionState::EAS_Unoccupied &&
-			CharacterState == ECharacterState::ECS_Equipped;}
-	
-	// Attack
 	int32 AttackIndex = 0;
 	bool bCanCombo = false;
 	FVector2D LastInputAxis = FVector2D::ZeroVector;
-	void RotateToInputDirection();
-	
-	// Animation montages
-	UPROPERTY(EditDefaultsOnly, Category = Montages)
-	UAnimMontage* EquipMontage;
+
 public:
-	// Inner inline functions
+	/* Getters & Setters */
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
 	FORCEINLINE void SetCharacterState(ECharacterState NewState) { CharacterState = NewState; }
 	FORCEINLINE void SetOverlappingItem(AItem* NewItem) { OverlappingItem = NewItem; }
-	
-	// Inner helper functions
-	void SetupComponents();
+
 };

@@ -2,6 +2,7 @@
 
 
 #include "Enemies/Enemy.h"
+#include "Items/Weapons/Weapon.h"
 
 #include "Components/CapsuleComponent.h"
 #include "Components/AttributeComponent.h"
@@ -10,19 +11,14 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "Perception/PawnSensingComponent.h"
 
-#include "Items/Weapons/Weapon.h"
-#include "Animation/AnimMontage.h"
-#include "Kismet/GameplayStatics.h"
 #include "AIController.h"
+#include "Animation/AnimMontage.h"
 
 
 AEnemy::AEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
-	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	GetMesh()->SetGenerateOverlapEvents(true);
-	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility,ECollisionResponse::ECR_Block);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera,ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);
 	
@@ -37,8 +33,7 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	UpdateHealth();
-	ShowHealthBar(false);
+	Initialize();
 
 	if (PawnSensing)
 	{
@@ -50,19 +45,11 @@ void AEnemy::BeginPlay()
 		EquippedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
 		EquippedWeapon->Equipped(this,FName("RightHandSocket"));
 	}
-	
-	EnemyController = Cast<AAIController>(GetController());
-	MoveToTarget(PatrolTarget);
-	
 }
 
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	// debug
-	DrawDebugSphere(GetWorld(),GetActorLocation(),AttackRadius,12,FColor::Red,false);
-	DrawDebugSphere(GetWorld(),GetActorLocation(),CombatRadius,12,FColor::Blue,false);
 	
 	if (!IsDead())
 	{
@@ -149,7 +136,7 @@ void AEnemy::PlayAttackMontage()
 void AEnemy::PlayDeathMontage()
 {
 	
-	// TO-DO: Fix play death montage twice while getting hit twice
+	// TODO: Fix play death montage twice while getting hit twice
 	const FName SectionName = SelectRandomMontageSection(DeathMontageSections);
 	const bool bPlayed = PlayMontageSection(DeathMontage,SectionName);
 	
@@ -162,7 +149,6 @@ void AEnemy::PlayDeathMontage()
 
 void AEnemy::PawnSeen(APawn* Pawn)
 {
-	//TO DO: Implement combat logic when notice players
 	if (!IsPatrolling() || IsDead()) return;
 	if (Pawn->ActorHasTag(FName("Player")))
 	{
@@ -191,6 +177,7 @@ void AEnemy::HandleCombat()
 		StartChasing();
 	}else if ( IsInsideAttackRadius() && !IsAttackWindow() &&!IsAttacking())
 	{
+		// TODO: Orient to Player before Swinging sword 
 		StartAttacking();
 	}
 }
@@ -206,10 +193,6 @@ void AEnemy::HandlePatrol()
 	}
 }
 
-void AEnemy::ClearTimer(FTimerHandle& TimerHandle) const
-{
-	GetWorldTimerManager().ClearTimer(TimerHandle);
-}
 
 void AEnemy::ShowHealthBar(bool bShow)
 {
@@ -227,11 +210,13 @@ void AEnemy::UpdateHealth()
 	}
 }
 
-bool AEnemy::InTargetRange(AActor* Target, double Radius) const
+void AEnemy::Initialize()
 {
-	if (!Target) return false;
-	const double Distance = (Target->GetActorLocation() - GetActorLocation()).Size();
-	return Distance <= Radius;
+	Tags.Add(FName("Enemy"));
+	UpdateHealth();
+	ShowHealthBar(false);
+	EnemyController = Cast<AAIController>(GetController());
+	MoveToTarget(PatrolTarget);
 }
 
 void AEnemy::MoveToTarget(AActor* Target) const
@@ -298,4 +283,14 @@ void AEnemy::PatrolWaitEnd()
 	MoveToTarget(PatrolTarget);
 }
 
+void AEnemy::ClearTimer(FTimerHandle& TimerHandle) const
+{
+	GetWorldTimerManager().ClearTimer(TimerHandle);
+}
 
+bool AEnemy::InTargetRange(AActor* Target, double Radius) const
+{
+	if (!Target) return false;
+	const double Distance = (Target->GetActorLocation() - GetActorLocation()).Size();
+	return Distance <= Radius;
+}
