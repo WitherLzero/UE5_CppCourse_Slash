@@ -5,7 +5,6 @@
 #include "Items/Weapons/Weapon.h"
 
 #include "Components/CapsuleComponent.h"
-#include "Components/AttributeComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -22,7 +21,6 @@ AEnemy::AEnemy()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera,ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);
 	
-	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
 	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensing"));
 	HealthBarComponent = CreateDefaultSubobject<UHealthBarComponent>(TEXT("Health Bar Component"));
 	HealthBarComponent->SetupAttachment(GetRootComponent());
@@ -67,18 +65,7 @@ void AEnemy::Tick(float DeltaTime)
 void AEnemy::GetHit_Implementation(const FVector& ImpactLocation)
 {
 	ShowHealthBar(true);
-	if (!IsDead())
-	{
-		double Theta = CalculateImpactAngle(ImpactLocation);
-		DirectionalHitReact(Theta);
-	}
-	else
-	{
-		Die();
-	}
-
-	PlayHitSound(ImpactLocation);
-	SpawnHitParticles(ImpactLocation);
+	Super::GetHit_Implementation(ImpactLocation);
 	
 }
 
@@ -122,7 +109,7 @@ void AEnemy::Die()
 void AEnemy::HandleDamage(float Damage)
 {
 	Super::HandleDamage(Damage);
-	if (!Attributes->IsAlive()) EnemyState = EEnemyState::EES_Dead;
+	if (IsAlive()) EnemyState = EEnemyState::EES_Dead;
 	UpdateHealth();
 }
 
@@ -206,7 +193,7 @@ void AEnemy::UpdateHealth()
 {
 	if (HealthBarComponent)
 	{
-		HealthBarComponent->SetHealthPercent(Attributes->GetHealthPercent());
+		HealthBarComponent->SetHealthPercent(GetHealthPercent());
 	}
 }
 

@@ -14,6 +14,8 @@ ABaseCharacter::ABaseCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	InitializeMesh();
+	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
+	
 }
 
 void ABaseCharacter::BeginPlay()
@@ -33,6 +35,22 @@ void ABaseCharacter::Attack()
 
 void ABaseCharacter::Die()
 {
+}
+
+void ABaseCharacter::GetHit_Implementation(const FVector& ImpactLocation)
+{
+	if (Attributes->IsAlive())
+	{
+		double Theta = CalculateImpactAngle(ImpactLocation);
+		DirectionalHitReact(Theta);
+	}
+	else
+	{
+		Die();
+	}
+	
+	PlayHitSound(ImpactLocation);
+	SpawnHitParticles(ImpactLocation);
 }
 
 void ABaseCharacter::HandleDamage(float Damage)
@@ -61,44 +79,7 @@ void ABaseCharacter::SetupWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 	}
 }
 
-void ABaseCharacter::DirectionalHitReact(double Theta)
-{
-	FName Section = HitReactSections.Back;
-	if (Theta >= -45.f && Theta < 45.f)
-	{
-		Section = HitReactSections.Front;
-	}
-	else if (Theta >= -135.f && Theta < -45.f)
-	{
-		Section = HitReactSections.Left;
-	}
-	else if (Theta >= 45.f && Theta < 135.f)
-	{
-		Section = HitReactSections.Right;
-	}
-	PlayHitReactMontage(Section);
-}
 
-double ABaseCharacter::CalculateImpactAngle(const FVector& ImpactLocation)
-{
-	const FVector Forward = GetActorForwardVector();
-	const FVector ImpactPoint_Horizontal = FVector(ImpactLocation.X,ImpactLocation.Y,GetActorLocation().Z);
-	const FVector ToHit = (ImpactPoint_Horizontal - GetActorLocation()).GetSafeNormal();
-	
-	/* cosTheta = A dot B    
-	 * Theta = acos ( cosTheta ) */
-	double Theta = FMath::Acos(FVector::DotProduct(Forward,ToHit));
-	Theta = FMath::RadiansToDegrees(Theta);
-	
-	// If Hit from right, Crossproduct points down ( left-hand rule )
-	const FVector CrossProduct = FVector::CrossProduct(Forward,ToHit);
-	if (CrossProduct.Z < 0.f)
-	{
-		Theta*= -1.f;
-	}
-	
-	return Theta;
-}
 
 void ABaseCharacter::PlayHitSound(const FVector& Location) const
 {
@@ -176,6 +157,45 @@ void ABaseCharacter::InitializeMesh() const
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldDynamic,ECR_Overlap);
 	GetMesh()->SetGenerateOverlapEvents(true);
+}
+
+void ABaseCharacter::DirectionalHitReact(double Theta)
+{
+	FName Section = HitReactSections.Back;
+	if (Theta >= -45.f && Theta < 45.f)
+	{
+		Section = HitReactSections.Front;
+	}
+	else if (Theta >= -135.f && Theta < -45.f)
+	{
+		Section = HitReactSections.Left;
+	}
+	else if (Theta >= 45.f && Theta < 135.f)
+	{
+		Section = HitReactSections.Right;
+	}
+	PlayHitReactMontage(Section);
+}
+
+double ABaseCharacter::CalculateImpactAngle(const FVector& ImpactLocation)
+{
+	const FVector Forward = GetActorForwardVector();
+	const FVector ImpactPoint_Horizontal = FVector(ImpactLocation.X,ImpactLocation.Y,GetActorLocation().Z);
+	const FVector ToHit = (ImpactPoint_Horizontal - GetActorLocation()).GetSafeNormal();
+	
+	/* cosTheta = A dot B    
+	 * Theta = acos ( cosTheta ) */
+	double Theta = FMath::Acos(FVector::DotProduct(Forward,ToHit));
+	Theta = FMath::RadiansToDegrees(Theta);
+	
+	// If Hit from right, Crossproduct points down ( left-hand rule )
+	const FVector CrossProduct = FVector::CrossProduct(Forward,ToHit);
+	if (CrossProduct.Z < 0.f)
+	{
+		Theta*= -1.f;
+	}
+	
+	return Theta;
 }
 
 

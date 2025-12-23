@@ -122,9 +122,7 @@ bool ASlashCharacter::CanAttack() const
 
 void ASlashCharacter::GetHit_Implementation(const FVector& ImpactLocation)
 {
-	UE_LOG(LogTemp,Warning,TEXT("Character Get Hit!"));
-	PlayHitSound(ImpactLocation);
-	SpawnHitParticles(ImpactLocation);
+	Super::GetHit_Implementation(ImpactLocation);
 }
 
 /*

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/AttributeComponent.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
 #include "BaseCharacter.generated.h"
@@ -43,6 +44,7 @@ protected:
 	 */
 	virtual void Attack();
 	virtual void Die();
+	virtual void GetHit_Implementation(const FVector& ImpactLocation) override;
 	virtual void HandleDamage(float Damage);
 	virtual bool CanAttack() const;
 	 // Functions for Notify
@@ -50,9 +52,6 @@ protected:
 	virtual void AttackEnd();
 	UFUNCTION(BlueprintCallable)
 	void SetupWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType);
-	
-	void DirectionalHitReact(double Theta);
-	double CalculateImpactAngle(const FVector& ImpactLocation);
 	
 	
 	/*
@@ -78,6 +77,10 @@ protected:
 	 *  Helpers
 	 */
 	void InitializeMesh() const;
+	void DirectionalHitReact(double Theta);
+	double CalculateImpactAngle(const FVector& ImpactLocation);
+	
+	bool IsAlive() const { return Attributes->IsAlive();}
 	
 	/*
 	 *  Components
@@ -132,5 +135,5 @@ private:
 
 public:
 	FORCEINLINE void SetWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }
-	
+	FORCEINLINE float GetHealthPercent() const { return Attributes->GetHealthPercent(); }
 };
