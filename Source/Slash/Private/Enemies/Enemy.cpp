@@ -70,6 +70,8 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter
 		ShowHealthBar(true);
 	}
 	ClearTimer(PatrolTimer);
+	ClearTimer(AttackTimer);
+	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 }
 
@@ -77,10 +79,16 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 	AActor* DamageCauser)
 {
 	HandleDamage(DamageAmount);
+	CombatTarget = EventInstigator->GetPawn();
 	if (!IsDead())
 	{
-		CombatTarget = EventInstigator->GetPawn();
-		StartChasing();
+		if (IsInsideAttackRadius())
+		{
+			StartAttacking();
+		}else if (IsOutsideAttackRadius())
+		{
+			StartChasing();
+		}
 	}
 	return DamageAmount;	
 }
@@ -168,7 +176,6 @@ void AEnemy::HandleCombat()
 		StartChasing();
 	}else if ( IsInsideAttackRadius() && !IsAttackWindow() &&!IsAttacking())
 	{
-		// TODO: Orient to Player before Swinging sword 
 		StartAttacking();
 	}
 }
