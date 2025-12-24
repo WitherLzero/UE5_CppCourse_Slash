@@ -48,6 +48,13 @@ void ASlashCharacter::BeginPlay()
 	}
 }
 
+float ASlashCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
+{
+	HandleDamage(DamageAmount);
+	return DamageAmount;
+}
+
 // Called every frame
 void ASlashCharacter::Tick(float DeltaTime)
 {
