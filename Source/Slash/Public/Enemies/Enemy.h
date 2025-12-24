@@ -9,7 +9,7 @@
 class AAIController;
 class UPawnSensingComponent;
 class UHealthBarComponent;
-class UAttributeComponent;
+
 
 
 UCLASS()
@@ -92,6 +92,10 @@ private:
 	UHealthBarComponent* HealthBarComponent;
 	UPROPERTY(VisibleAnywhere)
 	UPawnSensingComponent* PawnSensing;
+
+	
+	
+	
 	// AI Navigation
 	UPROPERTY()
 	AAIController* EnemyController;
@@ -100,8 +104,6 @@ private:
 	UPROPERTY(EditInstanceOnly,Category="AI Navigation")
 	TArray<AActor*> PatrolTargets;
 	// Combat
-	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
-	AActor* CombatTarget;
 	UPROPERTY(EditInstanceOnly, Category = "Combat")
 	double CombatRadius = 500.f;
 	UPROPERTY(EditInstanceOnly, Category = "Combat")

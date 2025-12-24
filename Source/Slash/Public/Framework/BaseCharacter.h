@@ -11,6 +11,8 @@
 
 class AWeapon;
 class UAttributeComponent;
+class UMotionWarpingComponent;
+
 
 USTRUCT()
 struct FHitReactSections
@@ -48,12 +50,16 @@ protected:
 	virtual void GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter) override;
 	virtual void HandleDamage(float Damage);
 	virtual bool CanAttack() const;
-	 // Functions for Notify
+	 
+	// Functions for Notify
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackEnd();
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType);
-	
+	UFUNCTION(BlueprintCallable)
+	void UpdateWarpTargetLocation(FName WarpTargetName, float DistanceThreshold = 200.f);
+	UFUNCTION(BlueprintCallable)
+	void UpdateWarpTargetRotation(FName WarpTargetName);
 	
 	/*
 	 *  FXs Functions
@@ -74,20 +80,21 @@ protected:
 	FName SelectMontageSection(const TArray<FName>& SectionNames, int32 Index) const;
 	FName SelectRandomMontageSection(const TArray<FName>& SectionNames) const ;
 	
-	/*
-	 *  Helpers
-	 */
-	void InitializeMesh() const;
-	void DirectionalHitReact(double Theta);
-	double CalculateImpactAngle(const FVector& ImpactLocation);
 	
 	bool IsAlive() const { return Attributes->IsAlive();}
+	
+	
+	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
+	AActor* CombatTarget;
+	float WarpTargetDistance = 75.f;
 	
 	/*
 	 *  Components
 	 */
 	UPROPERTY(VisibleAnywhere)
 	UAttributeComponent* Attributes;
+	UPROPERTY(VisibleAnywhere)
+	UMotionWarpingComponent* MotionWarping;
 	
 	/*
 	 *  FXs
@@ -126,6 +133,17 @@ protected:
 	FHitReactSections HitReactSections;
 	
 private:
+	/*
+ *  Helpers
+ */
+	void InitializeMesh() const;
+	
+	void DirectionalHitReact(double Theta);
+	double CalculateImpactAngle(const FVector& ImpactLocation);
+	
+	FVector CalculateTranslationWarpTarget() const;
+	FRotator CalculateRotationWarpTarget() const;
+	
 	UFUNCTION()
 	TArray<FString> GetAttackMontageSectionNames() const;
 	

@@ -5,9 +5,10 @@
 
 #include "Components/AttributeComponent.h"
 #include "Components/BoxComponent.h"
+#include "MotionWarping/Public/MotionWarpingComponent.h"
 #include "Items/Weapons/Weapon.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "Kismet/KismetMathLibrary.h"
 
 
 ABaseCharacter::ABaseCharacter()
@@ -15,6 +16,8 @@ ABaseCharacter::ABaseCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	InitializeMesh();
 	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
+	MotionWarping = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("Motion Warping"));
+	
 	
 }
 
@@ -79,6 +82,29 @@ void ABaseCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collision
 	}
 }
 
+void ABaseCharacter::UpdateWarpTargetLocation(FName WarpTargetName, float DistanceThreshold)
+{
+	double Distance = (CombatTarget->GetActorLocation() - GetActorLocation()).Size();
+	if (Distance > DistanceThreshold)
+	{
+		MotionWarping->RemoveWarpTarget(WarpTargetName);
+		return;
+	}
+	FVector TargetLocation = CalculateTranslationWarpTarget();
+	MotionWarping->AddOrUpdateWarpTargetFromLocation(WarpTargetName,TargetLocation);
+	
+}
+
+void ABaseCharacter::UpdateWarpTargetRotation(FName WarpTargetName)
+{
+	if (!CombatTarget) return;
+	
+	FRotator TargetRotation = CalculateRotationWarpTarget();
+	MotionWarping->AddOrUpdateWarpTargetFromLocationAndRotation(
+		WarpTargetName,
+		CombatTarget->GetActorLocation(),
+		TargetRotation);
+}
 
 
 void ABaseCharacter::PlayHitSound(const FVector& Location) const
@@ -196,6 +222,26 @@ double ABaseCharacter::CalculateImpactAngle(const FVector& ImpactLocation)
 	}
 	
 	return Theta;
+}
+
+FVector ABaseCharacter::CalculateTranslationWarpTarget() const
+{
+	if (!CombatTarget) return FVector::ZeroVector;
+	
+	const FVector TargetLocation = CombatTarget->GetActorLocation();
+	const FVector SelfLocation = GetActorLocation();
+	FVector Direction = (SelfLocation - TargetLocation).GetSafeNormal();
+	
+	return TargetLocation + Direction * WarpTargetDistance;
+}
+
+FRotator ABaseCharacter::CalculateRotationWarpTarget() const
+{
+	if (CombatTarget)
+	{
+		return UKismetMathLibrary::FindLookAtRotation(GetActorLocation(),CombatTarget->GetActorLocation());
+	}
+	return FRotator::ZeroRotator;
 }
 
 
