@@ -69,10 +69,6 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter
 	{
 		ShowHealthBar(true);
 	}
-	ClearTimer(PatrolTimer);
-	ClearTimer(AttackTimer);
-	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
-	
 }
 
 float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
@@ -80,6 +76,11 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 {
 	HandleDamage(DamageAmount);
 	CombatTarget = EventInstigator->GetPawn();
+
+	ClearTimer(PatrolTimer);
+	ClearTimer(AttackTimer);
+	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	if (!IsDead())
 	{
 		if (IsInsideAttackRadius())
