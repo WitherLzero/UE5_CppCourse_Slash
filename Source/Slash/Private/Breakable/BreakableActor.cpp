@@ -22,7 +22,7 @@ void ABreakableActor::BeginPlay()
 	
 }
 
-void ABreakableActor::GetHit_Implementation(const FVector& ImpactLocation)
+void ABreakableActor::GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter)
 {
 	if (UWorld* World = GetWorld(); World && TreasureClasses.Num()>0)
 	{

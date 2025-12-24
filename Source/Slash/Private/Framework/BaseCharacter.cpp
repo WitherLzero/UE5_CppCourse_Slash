@@ -37,11 +37,11 @@ void ABaseCharacter::Die()
 {
 }
 
-void ABaseCharacter::GetHit_Implementation(const FVector& ImpactLocation)
+void ABaseCharacter::GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter)
 {
 	if (Attributes->IsAlive())
 	{
-		double Theta = CalculateImpactAngle(ImpactLocation);
+		double Theta = CalculateImpactAngle(Hitter->GetActorLocation());
 		DirectionalHitReact(Theta);
 	}
 	else
@@ -70,7 +70,7 @@ void ABaseCharacter::AttackEnd()
 {
 }
 
-void ABaseCharacter::SetupWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType)
+void ABaseCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType)
 {
 	if (EquippedWeapon && EquippedWeapon->GetWeaponBox())
 	{

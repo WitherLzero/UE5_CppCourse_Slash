@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/AttributeComponent.h"
+#include "Framework/Enums/CharacterTypes.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
 #include "BaseCharacter.generated.h"
@@ -44,14 +45,14 @@ protected:
 	 */
 	virtual void Attack();
 	virtual void Die();
-	virtual void GetHit_Implementation(const FVector& ImpactLocation) override;
+	virtual void GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter) override;
 	virtual void HandleDamage(float Damage);
 	virtual bool CanAttack() const;
 	 // Functions for Notify
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackEnd();
 	UFUNCTION(BlueprintCallable)
-	void SetupWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType);
+	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionType);
 	
 	
 	/*

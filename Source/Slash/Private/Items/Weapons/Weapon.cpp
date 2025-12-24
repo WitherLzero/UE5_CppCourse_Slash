@@ -146,7 +146,7 @@ void AWeapon::ExecuteGetHit(const FHitResult& BoxHit) const
 {
 	if (BoxHit.GetActor()->Implements<UHitInterface>())
 	{
-		IHitInterface::Execute_GetHit(BoxHit.GetActor(),BoxHit.ImpactPoint);
+		IHitInterface::Execute_GetHit(BoxHit.GetActor(),BoxHit.ImpactPoint,GetOwner());
 	}
 }
 

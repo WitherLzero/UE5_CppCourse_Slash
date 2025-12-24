@@ -62,10 +62,14 @@ void AEnemy::Tick(float DeltaTime)
 	}
 }
 
-void AEnemy::GetHit_Implementation(const FVector& ImpactLocation)
+void AEnemy::GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter)
 {
-	ShowHealthBar(true);
-	Super::GetHit_Implementation(ImpactLocation);
+	Super::GetHit_Implementation(ImpactLocation, Hitter);
+	if (!IsDead())
+	{
+		ShowHealthBar(true);
+	}
+	ClearTimer(PatrolTimer);
 	
 }
 
@@ -73,7 +77,6 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 	AActor* DamageCauser)
 {
 	HandleDamage(DamageAmount);
-	ClearTimer(PatrolTimer);
 	if (!IsDead())
 	{
 		CombatTarget = EventInstigator->GetPawn();
@@ -102,6 +105,7 @@ void AEnemy::Die()
 	ClearTimer(AttackTimer);
 	ClearTimer(PatrolTimer);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
 	ShowHealthBar(false);
 	PlayDeathMontage();
 }
@@ -109,7 +113,7 @@ void AEnemy::Die()
 void AEnemy::HandleDamage(float Damage)
 {
 	Super::HandleDamage(Damage);
-	if (IsAlive()) EnemyState = EEnemyState::EES_Dead;
+	if (!IsAlive()) EnemyState = EEnemyState::EES_Dead;
 	UpdateHealth();
 }
 

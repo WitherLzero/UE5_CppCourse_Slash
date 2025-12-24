@@ -4,11 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Framework/BaseCharacter.h"
-#include "GameFramework/Character.h"
-#include "Interfaces/HitInterface.h"
-
-#include "Slash/DebugMacro.h"
-#include "_Enums/CharacterTypes.h"
 #include "Enemy.generated.h"
 
 class AAIController;
@@ -47,7 +42,7 @@ protected:
 	/* </ABaseCharacter> */
 	
 	/* <IHitInterface> */
-	virtual void GetHit_Implementation(const FVector& ImpactLocation) override;
+	virtual void GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter) override;
 	/* </IHitInterface> */
 	
 	

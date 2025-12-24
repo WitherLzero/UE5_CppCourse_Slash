@@ -19,7 +19,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Interfaces
-	void GetHit_Implementation(const FVector& ImpactLocation) override;
+	virtual void GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter) override;
 protected:
 	virtual void BeginPlay() override;
 

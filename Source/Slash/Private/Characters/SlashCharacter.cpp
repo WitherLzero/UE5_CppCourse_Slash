@@ -120,9 +120,11 @@ bool ASlashCharacter::CanAttack() const
 		AttackMontageSections.Num() > 0;
 }
 
-void ASlashCharacter::GetHit_Implementation(const FVector& ImpactLocation)
+void ASlashCharacter::GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter)
 {
-	Super::GetHit_Implementation(ImpactLocation);
+	Super::GetHit_Implementation(ImpactLocation, Hitter);
+	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
+	ActionState = EActionState::EAS_HitReacting;
 }
 
 /*
@@ -232,6 +234,11 @@ void ASlashCharacter::Disarm()
 }
 
 void ASlashCharacter::FinishArming()
+{
+	ActionState = EActionState::EAS_Unoccupied;
+}
+
+void ASlashCharacter::HitReactEnd()
 {
 	ActionState = EActionState::EAS_Unoccupied;
 }

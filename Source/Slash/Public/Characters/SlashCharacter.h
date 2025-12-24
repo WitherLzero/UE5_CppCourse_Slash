@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "Framework/BaseCharacter.h"
-#include "_Enums/CharacterTypes.h"
 #include "SlashCharacter.generated.h"
 
 class AItem;
@@ -44,7 +43,7 @@ protected:
 	/* </ABaseCharacter> */
 	
 	/* <IHitInterface> */
-	virtual void GetHit_Implementation(const FVector& ImpactLocation) override;
+	virtual void GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter) override;
 	/* </IHitInterface> */
 
 
@@ -73,6 +72,9 @@ protected:
 	
 	UFUNCTION(BlueprintCallable)
 	void FinishArming();
+	
+	UFUNCTION(BlueprintCallable)
+	void HitReactEnd();
 
 	/*
 	 * Variables: Inputs
