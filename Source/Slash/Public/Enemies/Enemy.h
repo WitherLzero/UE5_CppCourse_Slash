@@ -36,6 +36,7 @@ protected:
 	virtual void AttackEnd() override;
 	virtual void Die() override;
 	virtual void HandleDamage(float Damage) override;
+	virtual void UpdateHealthUI() const override;
 	// Play Montage
 	virtual void PlayAttackMontage() override;
 	virtual void PlayDeathMontage() override;
@@ -58,7 +59,6 @@ private:
 	/* Helpers */
 	// Health
 	void ShowHealthBar(bool bShow);
-	void UpdateHealth();
 	// Behavior
 	void Initialize();
 	AActor* SelectPatrolTarget();

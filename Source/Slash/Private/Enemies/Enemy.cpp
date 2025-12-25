@@ -123,7 +123,7 @@ void AEnemy::HandleDamage(float Damage)
 {
 	Super::HandleDamage(Damage);
 	if (!IsAlive()) EnemyState = EEnemyState::EES_Dead;
-	UpdateHealth();
+	UpdateHealthUI();
 }
 
 void AEnemy::PlayAttackMontage()
@@ -201,7 +201,7 @@ void AEnemy::ShowHealthBar(bool bShow)
 	}
 }
 
-void AEnemy::UpdateHealth()
+void AEnemy::UpdateHealthUI() const
 {
 	if (HealthBarComponent)
 	{
@@ -212,7 +212,7 @@ void AEnemy::UpdateHealth()
 void AEnemy::Initialize()
 {
 	Tags.Add(FName("Enemy"));
-	UpdateHealth();
+	UpdateHealthUI();
 	ShowHealthBar(false);
 	EnemyController = Cast<AAIController>(GetController());
 	MoveToTarget(PatrolTarget);

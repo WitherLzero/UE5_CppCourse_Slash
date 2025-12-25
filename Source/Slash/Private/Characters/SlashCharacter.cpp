@@ -67,6 +67,8 @@ float ASlashCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const&
 	class AController* EventInstigator, AActor* DamageCauser)
 {
 	HandleDamage(DamageAmount);
+	UpdateHealthUI();
+	
 	return DamageAmount;
 }
 
@@ -142,10 +144,17 @@ bool ASlashCharacter::CanAttack() const
 		AttackMontageSections.Num() > 0;
 }
 
+void ASlashCharacter::UpdateHealthUI() const
+{
+	if (UIOverlay && Attributes)
+	{
+		UIOverlay->SetHealthPrecent(Attributes->GetHealthPercent());
+	}
+}
+
 void ASlashCharacter::GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter)
 {
 	Super::GetHit_Implementation(ImpactLocation, Hitter);
-	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
 	ActionState = EActionState::EAS_HitReacting;
 }
 

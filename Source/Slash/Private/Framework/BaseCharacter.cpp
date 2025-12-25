@@ -44,6 +44,7 @@ void ABaseCharacter::GetHit_Implementation(const FVector& ImpactLocation, AActor
 {
 	if (Attributes->IsAlive())
 	{
+		SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
 		double Theta = CalculateImpactAngle(Hitter->GetActorLocation());
 		DirectionalHitReact(Theta);
 	}
@@ -62,6 +63,10 @@ void ABaseCharacter::HandleDamage(float Damage)
 	{
 		Attributes->ReceiveDamage(Damage);
 	}
+}
+
+void ABaseCharacter::UpdateHealthUI() const
+{
 }
 
 bool ABaseCharacter::CanAttack() const

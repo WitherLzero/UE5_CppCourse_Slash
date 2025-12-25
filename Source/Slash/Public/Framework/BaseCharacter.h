@@ -49,6 +49,7 @@ protected:
 	virtual void Die();
 	virtual void GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter) override;
 	virtual void HandleDamage(float Damage);
+	virtual void UpdateHealthUI() const;
 	virtual bool CanAttack() const;
 	 
 	// Functions for Notify

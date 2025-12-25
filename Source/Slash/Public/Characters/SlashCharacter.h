@@ -42,6 +42,7 @@ protected:
 	virtual void AttackEnd() override;
 	virtual void PlayAttackMontage() override;
 	virtual bool CanAttack() const override;
+	virtual void UpdateHealthUI() const override;
 	/* </ABaseCharacter> */
 	
 	/* <IHitInterface> */
