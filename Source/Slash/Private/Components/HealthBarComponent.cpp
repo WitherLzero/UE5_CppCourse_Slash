@@ -1,7 +1,7 @@
 ﻿// copyright: none
 
 
-#include "HUD/HealthBarComponent.h"
+#include "Components/HealthBarComponent.h"
 
 #include "Components/ProgressBar.h"
 #include "HUD/HealthBar.h"

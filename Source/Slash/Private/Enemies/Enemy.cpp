@@ -5,7 +5,7 @@
 #include "Items/Weapons/Weapon.h"
 
 #include "Components/CapsuleComponent.h"
-#include "HUD/HealthBarComponent.h"
+#include "Components/HealthBarComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Perception/PawnSensingComponent.h"
