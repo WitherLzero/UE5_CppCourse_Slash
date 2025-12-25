@@ -7,6 +7,7 @@
 #include "Framework/BaseCharacter.h"
 #include "SlashCharacter.generated.h"
 
+class UPlayerOverlay;
 class AItem;
 class UCameraComponent;
 class USpringArmComponent;
@@ -123,6 +124,9 @@ private:
 	 */
 	UPROPERTY(VisibleInstanceOnly)
 	AItem* OverlappingItem;
+	
+	UPROPERTY()
+	UPlayerOverlay* UIOverlay;
 	
 	UPROPERTY(VisibleInstanceOnly)
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;

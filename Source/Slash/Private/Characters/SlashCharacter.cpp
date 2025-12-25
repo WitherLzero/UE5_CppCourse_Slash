@@ -15,6 +15,8 @@
 #include "Interfaces/Interactable.h"
 
 #include "Animation/AnimMontage.h"
+#include "HUD/PlayerHUD.h"
+#include "HUD/PlayerOverlay.h"
 #include "Items/Weapons/Weapon.h"
 
 // Sets default values
@@ -45,6 +47,19 @@ void ASlashCharacter::BeginPlay()
 		{
 			Subsystem->AddMappingContext(EchoMappingContext,0);
 		}
+
+		if (APlayerHUD* PlayerHUD = Cast<APlayerHUD>(PlayerController->GetHUD()))
+		{
+			UIOverlay = PlayerHUD->GetPlayerOverlay();
+		}
+	}
+
+	if (UIOverlay && Attributes)
+	{
+		UIOverlay->SetHealthPrecent(Attributes->GetHealthPercent());
+		UIOverlay->SetStaminaPrecent(1.f);
+		UIOverlay->SetCoinText(0);
+		UIOverlay->SetSoulText(0);
 	}
 }
 

@@ -24,4 +24,7 @@ private:
 	
 	UPROPERTY()
 	UPlayerOverlay* PlayerOverlay;
+	
+public:
+	FORCEINLINE UPlayerOverlay* GetPlayerOverlay() const { return PlayerOverlay; }
 };
