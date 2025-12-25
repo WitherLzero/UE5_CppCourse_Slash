@@ -190,6 +190,7 @@ void ASlashCharacter::Look(const FInputActionValue& Value)
 
 void ASlashCharacter::Jump()
 {
+	if (ActionState != EActionState::EAS_Unoccupied) return;
 	Super::Jump();
 }
 
