@@ -132,6 +132,17 @@ void ASlashCharacter::AttackEnd()
 	AttackIndex = 0;   // reset index
 }
 
+void ASlashCharacter::Die()
+{
+	Super::Die();
+	ActionState = EActionState::EAS_Dead;
+}
+
+void ASlashCharacter::HandleDeathEnd(float AnimDuration)
+{
+	GetWorldTimerManager().SetTimer(DeathTimer,this,&ASlashCharacter::DeathEnd,AnimDuration-0.05f);
+}
+
 void ASlashCharacter::PlayAttackMontage()
 {
 	const FName SectionName = SelectMontageSection(AttackMontageSections,AttackIndex);
@@ -155,7 +166,10 @@ void ASlashCharacter::UpdateHealthUI() const
 void ASlashCharacter::GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter)
 {
 	Super::GetHit_Implementation(ImpactLocation, Hitter);
-	ActionState = EActionState::EAS_HitReacting;
+	if (Attributes && Attributes->IsAlive())
+	{
+		ActionState = EActionState::EAS_HitReacting;
+	}
 }
 
 /*
@@ -326,4 +340,9 @@ void ASlashCharacter::RotateToInputDirection()
 			LastInputAxis = FVector2D::ZeroVector;
 		}
 	}
+}
+
+void ASlashCharacter::DeathEnd()
+{
+	GetMesh()->bPauseAnims = true;
 }

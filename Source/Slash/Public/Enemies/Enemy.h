@@ -35,11 +35,10 @@ protected:
 	virtual void Attack() override;
 	virtual void AttackEnd() override;
 	virtual void Die() override;
-	virtual void HandleDamage(float Damage) override;
+	virtual void HandleDeathEnd(float AnimDuration) override;
 	virtual void UpdateHealthUI() const override;
 	// Play Montage
 	virtual void PlayAttackMontage() override;
-	virtual void PlayDeathMontage() override;
 	/* </ABaseCharacter> */
 	
 	/* <IHitInterface> */
@@ -92,8 +91,6 @@ private:
 	UHealthBarComponent* HealthBarComponent;
 	UPROPERTY(VisibleAnywhere)
 	UPawnSensingComponent* PawnSensing;
-
-	
 	
 	
 	// AI Navigation

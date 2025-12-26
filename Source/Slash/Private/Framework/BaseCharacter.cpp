@@ -5,6 +5,7 @@
 
 #include "Components/AttributeComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "MotionWarping/Public/MotionWarpingComponent.h"
 #include "Items/Weapons/Weapon.h"
 #include "Kismet/GameplayStatics.h"
@@ -34,15 +35,25 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 void ABaseCharacter::Attack()
 {
+	if (CombatTarget && CombatTarget->ActorHasTag(FName("Dead")))
+	{
+		CombatTarget = nullptr;
+	}
 }
 
 void ABaseCharacter::Die()
 {
+	Tags.Add(FName("Dead"));
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SetMeshCollisionEnabled(ECollisionEnabled::NoCollision);
+	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
+	PlayDeathMontage();
+	
 }
 
 void ABaseCharacter::GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter)
 {
-	if (Attributes->IsAlive())
+	if (IsAlive())
 	{
 		SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
 		double Theta = CalculateImpactAngle(Hitter->GetActorLocation());
@@ -63,6 +74,10 @@ void ABaseCharacter::HandleDamage(float Damage)
 	{
 		Attributes->ReceiveDamage(Damage);
 	}
+}
+
+void ABaseCharacter::HandleDeathEnd(float AnimDuration)
+{
 }
 
 void ABaseCharacter::UpdateHealthUI() const
@@ -134,6 +149,12 @@ void ABaseCharacter::PlayAttackMontage()
 
 void ABaseCharacter::PlayDeathMontage()
 {
+	const FName SectionName = SelectRandomMontageSection(DeathMontageSections);
+	if (PlayMontageSection(DeathMontage,SectionName))
+	{
+		const float SectionTime = GetMontageSectionDuration(DeathMontage,SectionName);
+		HandleDeathEnd(SectionTime);
+	}
 }
 
 void ABaseCharacter::PlayHitReactMontage(const FName& SectionName)
@@ -181,6 +202,11 @@ FName ABaseCharacter::SelectRandomMontageSection(const TArray<FName>& SectionNam
 	return SectionNames[Selection];
 }
 
+void ABaseCharacter::SetMeshCollisionEnabled(ECollisionEnabled::Type CollisionType)
+{
+	GetMesh()->SetCollisionEnabled(CollisionType);
+}
+
 void ABaseCharacter::InitializeMesh() const
 {
 	GetMesh()->SetCollisionObjectType(ECC_WorldDynamic);
@@ -189,6 +215,7 @@ void ABaseCharacter::InitializeMesh() const
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldDynamic,ECR_Overlap);
 	GetMesh()->SetGenerateOverlapEvents(true);
 }
+
 
 void ABaseCharacter::DirectionalHitReact(double Theta)
 {

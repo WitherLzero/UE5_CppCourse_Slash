@@ -25,7 +25,6 @@ AEnemy::AEnemy()
 	HealthBarComponent = CreateDefaultSubobject<UHealthBarComponent>(TEXT("Health Bar Component"));
 	HealthBarComponent->SetupAttachment(GetRootComponent());
 	
-	
 }
 
 void AEnemy::BeginPlay()
@@ -75,8 +74,9 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 	AActor* DamageCauser)
 {
 	HandleDamage(DamageAmount);
+	UpdateHealthUI();
+	
 	CombatTarget = EventInstigator->GetPawn();
-
 	ClearTimer(PatrolTimer);
 	ClearTimer(AttackTimer);
 	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -96,8 +96,9 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 
 void AEnemy::Attack()
 {
-	EnemyState = EEnemyState::EES_Attacking;
 	Super::Attack();
+	if (CombatTarget == nullptr) return;
+	EnemyState = EEnemyState::EES_Attacking;
 	PlayAttackMontage();
 }
 
@@ -111,19 +112,16 @@ void AEnemy::AttackEnd()
 void AEnemy::Die()
 {
 	Super::Die();
+	EnemyState = EEnemyState::EES_Dead;
 	ClearTimer(AttackTimer);
 	ClearTimer(PatrolTimer);
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
 	ShowHealthBar(false);
-	PlayDeathMontage();
 }
 
-void AEnemy::HandleDamage(float Damage)
+
+void AEnemy::HandleDeathEnd(float AnimDuration)
 {
-	Super::HandleDamage(Damage);
-	if (!IsAlive()) EnemyState = EEnemyState::EES_Dead;
-	UpdateHealthUI();
+	GetWorldTimerManager().SetTimer(DeathTimer,this,&AEnemy::DeathEnd,AnimDuration);
 }
 
 void AEnemy::PlayAttackMontage()
@@ -133,23 +131,11 @@ void AEnemy::PlayAttackMontage()
 	PlayMontageSection(AttackMontage,SectionName);
 }
 
-void AEnemy::PlayDeathMontage()
-{
-	
-	// TODO: Fix play death montage twice while getting hit twice
-	const FName SectionName = SelectRandomMontageSection(DeathMontageSections);
-	const bool bPlayed = PlayMontageSection(DeathMontage,SectionName);
-	
-	if (bPlayed)
-	{
-		const float SectionTime = GetMontageSectionDuration(DeathMontage,SectionName);
-		GetWorldTimerManager().SetTimer(DeathTimer,this,&AEnemy::DeathEnd,SectionTime);
-	}
-}
 
 void AEnemy::PawnSeen(APawn* Pawn)
 {
 	if (!IsPatrolling() || IsDead()) return;
+	if (Pawn->ActorHasTag(FName("Dead"))) return;
 	if (Pawn->ActorHasTag(FName("Player")))
 	{
 		CombatTarget = Pawn;

@@ -49,6 +49,7 @@ protected:
 	virtual void Die();
 	virtual void GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter) override;
 	virtual void HandleDamage(float Damage);
+	virtual void HandleDeathEnd(float AnimDuration);
 	virtual void UpdateHealthUI() const;
 	virtual bool CanAttack() const;
 	 
@@ -81,7 +82,10 @@ protected:
 	FName SelectMontageSection(const TArray<FName>& SectionNames, int32 Index) const;
 	FName SelectRandomMontageSection(const TArray<FName>& SectionNames) const ;
 	
-	
+	/*
+	 *  Helpers
+	 */
+	void SetMeshCollisionEnabled(ECollisionEnabled::Type CollisionType);
 	bool IsAlive() const { return Attributes->IsAlive();}
 	
 	

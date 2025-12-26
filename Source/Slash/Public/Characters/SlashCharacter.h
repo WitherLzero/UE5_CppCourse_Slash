@@ -38,11 +38,15 @@ protected:
 	/* </AActor> */
 
 	/* <ABaseCharacter> */
+	// Combat
 	virtual void Attack() override;
 	virtual void AttackEnd() override;
-	virtual void PlayAttackMontage() override;
-	virtual bool CanAttack() const override;
+	virtual void Die() override;
+	virtual void HandleDeathEnd(float AnimDuration) override;
 	virtual void UpdateHealthUI() const override;
+	virtual bool CanAttack() const override;
+	// Play Montage
+	virtual void PlayAttackMontage() override;
 	/* </ABaseCharacter> */
 	
 	/* <IHitInterface> */
@@ -100,8 +104,9 @@ private:
 	void SetupComponents();
 	void InteractWithItem();
 	void RotateToInputDirection();
-	
-	/* State Checks */
+	// timer relevant
+	void DeathEnd(); 
+	// State Checks 
 	FORCEINLINE bool CanArm() const { return ActionState == EActionState::EAS_Unoccupied && CharacterState == ECharacterState::ECS_Unequipped && EquippedWeapon; }
 	FORCEINLINE bool CanDisarm() const { return ActionState == EActionState::EAS_Unoccupied && CharacterState == ECharacterState::ECS_Equipped; }
 
@@ -141,7 +146,9 @@ private:
 	int32 AttackIndex = 0;
 	bool bCanCombo = false;
 	FVector2D LastInputAxis = FVector2D::ZeroVector;
+	FTimerHandle DeathTimer;
 
+	
 public:
 	/* Getters & Setters */
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
