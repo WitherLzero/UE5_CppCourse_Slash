@@ -3,11 +3,11 @@
 
 #include "Items/Weapons/Weapon.h"
 
-#include "Characters/SlashCharacter.h"
 #include "Framework/BaseCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Interfaces/HitInterface.h"
+#include "Interfaces/Interactor.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -98,11 +98,12 @@ void AWeapon::Interact(ABaseCharacter* Caller)
 	if (!Caller) return;
 	Equipped(Caller,FName("RightHandSocket"));
 	
-	if (ASlashCharacter* SlashCharacter = Cast<ASlashCharacter>(Caller))
+	IInteractor* Interactor = Cast<IInteractor>(Caller);
+	if (Interactor)
 	{
-		SlashCharacter->SetCharacterState(ECharacterState::ECS_Equipped);
+		Interactor->OnEquip();
 	}
-
+	
 	if (EquipSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this,EquipSound,GetActorLocation());

@@ -172,6 +172,16 @@ void ASlashCharacter::GetHit_Implementation(const FVector& ImpactLocation, AActo
 	}
 }
 
+void ASlashCharacter::SetOverlappingItem(AItem* NewItem)
+{
+	OverlappingItem = NewItem;
+}
+
+void ASlashCharacter::OnEquip()
+{
+	SetCharacterState(ECharacterState::ECS_Equipped);
+}
+
 /*
  * Input Handlers
  */

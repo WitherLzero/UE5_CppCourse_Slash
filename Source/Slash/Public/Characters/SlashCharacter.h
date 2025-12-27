@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "Framework/BaseCharacter.h"
+#include "Interfaces/Interactor.h"
 #include "SlashCharacter.generated.h"
 
 class UPlayerOverlay;
@@ -18,7 +19,7 @@ class UInputAction;
 
 
 UCLASS()
-class SLASH_API ASlashCharacter : public ABaseCharacter
+class SLASH_API ASlashCharacter : public ABaseCharacter, public IInteractor
 {
 	GENERATED_BODY()
 
@@ -52,6 +53,11 @@ protected:
 	/* <IHitInterface> */
 	virtual void GetHit_Implementation(const FVector& ImpactLocation, AActor* Hitter) override;
 	/* </IHitInterface> */
+	
+	/* <IInteractor> */
+	virtual void SetOverlappingItem(AItem* NewItem) override;
+	virtual void OnEquip() override;
+	/* </IInteractor> */
 
 
 	/* Input Handlers */
@@ -153,6 +159,5 @@ public:
 	/* Getters & Setters */
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
 	FORCEINLINE void SetCharacterState(ECharacterState NewState) { CharacterState = NewState; }
-	FORCEINLINE void SetOverlappingItem(AItem* NewItem) { OverlappingItem = NewItem; }
 
 };
