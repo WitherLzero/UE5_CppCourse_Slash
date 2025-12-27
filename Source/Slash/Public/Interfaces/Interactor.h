@@ -24,4 +24,5 @@ class SLASH_API IInteractor
 public:
 	virtual void SetOverlappingItem(class AItem* Item) = 0;
 	virtual void OnEquip() = 0;
+	virtual void PickupSouls(class ASoul* Soul) = 0;
 };

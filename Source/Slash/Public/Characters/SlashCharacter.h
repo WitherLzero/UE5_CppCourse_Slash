@@ -57,6 +57,7 @@ protected:
 	/* <IInteractor> */
 	virtual void SetOverlappingItem(AItem* NewItem) override;
 	virtual void OnEquip() override;
+	virtual void PickupSouls(ASoul* Soul) override;
 	/* </IInteractor> */
 
 

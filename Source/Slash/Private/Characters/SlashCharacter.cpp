@@ -182,6 +182,11 @@ void ASlashCharacter::OnEquip()
 	SetCharacterState(ECharacterState::ECS_Equipped);
 }
 
+void ASlashCharacter::PickupSouls(ASoul* Soul)
+{
+	UE_LOG(LogTemp,Warning,TEXT("Pickup Souls."));
+}
+
 /*
  * Input Handlers
  */

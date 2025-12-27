@@ -7,7 +7,7 @@
 #include "Item.generated.h"
 
 
-
+class UNiagaraComponent;
 class USphereComponent;
 
 UENUM(BlueprintType)
@@ -38,6 +38,9 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* ItemMesh;
+	
+	UPROPERTY(VisibleAnywhere)
+	UNiagaraComponent* ItemEffect;
 	
 	// BlueprintReadOnly: can only get variables in event graph
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sine Paramaters") 
