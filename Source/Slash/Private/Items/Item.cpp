@@ -6,6 +6,8 @@
 #include "Interfaces/Interactor.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AItem::AItem()
@@ -25,15 +27,25 @@ AItem::AItem()
 	
 }
 
-float AItem::TransformedSine() const
+void AItem::BeginPlay() 
 {
-	return Amplitude * FMath::Sin(RunningTime * TimeConstant);
+	Super::BeginPlay();
+	
+	// Bind the callback to the delegate
+	Sphere->SetGenerateOverlapEvents(true);
+	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
+	Sphere->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
+	
 }
 
-float AItem::TransformedCosine() const
+void AItem::Tick(float DeltaTime)
 {
-	return Amplitude * FMath::Cos(RunningTime * TimeConstant);
+	Super::Tick(DeltaTime);
+
+	RunningTime += DeltaTime;
+
 }
+
 
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -61,24 +73,33 @@ void AItem::AttachMeshToSocket(USceneComponent* Parent, FName SocketName)
 	ItemMesh->AttachToComponent(Parent,Rules,SocketName);
 }
 
-// Called when the game starts or when spawned
-void AItem::BeginPlay() 
+
+void AItem::SpawnPickupEffect() const
 {
-	Super::BeginPlay();
-	
-	// Bind the callback to the delegate
-	Sphere->SetGenerateOverlapEvents(true);
-	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
-	Sphere->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
-	
+	if (PickupEffect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			this,
+			PickupEffect,
+			GetActorLocation());
+	}
 }
 
-// Called every frame
-void AItem::Tick(float DeltaTime)
+void AItem::PlayPickupSound() const
 {
-	Super::Tick(DeltaTime);
+	if (PickupSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, PickupSound, GetActorLocation());
+	}
+}
 
-	RunningTime += DeltaTime;
+float AItem::TransformedSine() const
+{
+	return Amplitude * FMath::Sin(RunningTime * TimeConstant);
+}
 
+float AItem::TransformedCosine() const
+{
+	return Amplitude * FMath::Cos(RunningTime * TimeConstant);
 }
 
