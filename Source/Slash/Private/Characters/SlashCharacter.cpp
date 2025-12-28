@@ -78,6 +78,8 @@ float ASlashCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const&
 void ASlashCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (Attributes) Attributes->RegenStamina(DeltaTime);
+	if (UIOverlay) UIOverlay->SetStaminaPrecent(Attributes->GetStaminaPercent());
 }
 
 // Called to bind functionality to input
@@ -211,7 +213,7 @@ void ASlashCharacter::Move(const FInputActionValue& Value)
 {
 	const FVector2D MoveAxis = Value.Get<FVector2D>();
 	LastInputAxis = MoveAxis;
-	if (ActionState != EActionState::EAS_Unoccupied) return;
+	if (!IsUnoccupied()) return;
 	if (GetController())
 	{
 		const FRotator YawRotation(0.f,GetControlRotation().Yaw,0.f);
@@ -235,15 +237,25 @@ void ASlashCharacter::Look(const FInputActionValue& Value)
 
 void ASlashCharacter::Dodge()
 {
-	if (ActionState != EActionState::EAS_Unoccupied) return;
-	RotateToInputDirection();
-	PlayMontageSection(DodgeMontage,FName("Dodge"));
-	ActionState = EActionState::EAS_Dodging;
+	if (CanDodge())
+	{
+		RotateToInputDirection();
+		PlayMontageSection(DodgeMontage,FName("Dodge"));
+		ActionState = EActionState::EAS_Dodging;
+		
+		Attributes->UseStamina(DodgeCost);
+		if (UIOverlay)
+		{
+			UIOverlay->SetStaminaPrecent(Attributes->GetStaminaPercent());
+		}
+		
+	}
 }
+	
 
 void ASlashCharacter::Jump()
 {
-	if (ActionState != EActionState::EAS_Unoccupied) return;
+	if (!IsUnoccupied()) return;
 	Super::Jump();
 }
 
@@ -259,10 +271,10 @@ void ASlashCharacter::EKeyPressed()
 	}
 }
 
+
 /*
  * Combat Handlers
  */
-
 void ASlashCharacter::EquipWeapon()
 {
 	if (CanDisarm())
@@ -283,7 +295,6 @@ void ASlashCharacter::EquipWeapon()
 /*
  * Anim Notifies
  */
-
 void ASlashCharacter::EnableCombo()
 {
 	bCanCombo = true;

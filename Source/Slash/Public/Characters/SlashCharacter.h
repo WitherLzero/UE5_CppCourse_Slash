@@ -120,6 +120,8 @@ private:
 	// timer relevant
 	void DeathEnd(); 
 	// State Checks 
+	FORCEINLINE bool IsUnoccupied() const { return ActionState == EActionState::EAS_Unoccupied; }
+	FORCEINLINE bool CanDodge() const { return IsUnoccupied() && Attributes && Attributes->GetStamina() > DodgeCost;}
 	FORCEINLINE bool CanArm() const { return ActionState == EActionState::EAS_Unoccupied && CharacterState == ECharacterState::ECS_Unequipped && EquippedWeapon; }
 	FORCEINLINE bool CanDisarm() const { return ActionState == EActionState::EAS_Unoccupied && CharacterState == ECharacterState::ECS_Equipped; }
 
@@ -159,6 +161,11 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	UAnimMontage* DodgeMontage;
 	
+	/* 
+	 * Combat
+	 */
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float DodgeCost = 15.f;
 	
 	int32 AttackIndex = 0;
 	bool bCanCombo = false;

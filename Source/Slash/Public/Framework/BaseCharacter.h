@@ -89,8 +89,16 @@ protected:
 	bool IsAlive() const { return Attributes->IsAlive();}
 	
 	
+	/*
+	*  Properties
+	*/
+	UPROPERTY(VisibleInstanceOnly,Category=Weapon)
+	AWeapon* EquippedWeapon;
+	
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
 	AActor* CombatTarget;
+	
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	float WarpTargetDistance = 75.f;
 	
 	/*
@@ -109,12 +117,7 @@ protected:
 	
 	UPROPERTY(EditAnywhere,category = VisualEffects)
 	UParticleSystem* HitParticles;	
-	
-	/*
-	 * Owning Items
-	 */
-	UPROPERTY(VisibleInstanceOnly,Category=Weapon)
-	AWeapon* EquippedWeapon;
+
 	
 	/*
 	 *  Anim Montages

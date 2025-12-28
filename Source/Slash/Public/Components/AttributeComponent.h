@@ -29,6 +29,15 @@ private:
 	UPROPERTY( EditAnywhere, Category = "Attributes")
 	float MaxHealth;
 	
+	UPROPERTY( EditAnywhere, Category = "Attributes")
+	float Stamina;
+	
+	UPROPERTY( EditAnywhere, Category = "Attributes")
+	float MaxStamina;
+	
+	UPROPERTY( EditAnywhere, Category = "Attributes")
+	float StaminaRegenRate;
+	
 	UPROPERTY( VisibleAnywhere, Category = "Attributes")
 	int32 Gold = 0;
 	
@@ -36,9 +45,13 @@ private:
 	int32 Souls = 0;
 public:
 	void ReceiveDamage(float Damage);
+	void UseStamina(float StaminaCost);
+	void RegenStamina(float DeltaTime);
 	void AddGold(int32 Amount);
 	void AddSouls(int32 Number);
 	FORCEINLINE float GetHealthPercent() const { return Health / MaxHealth; }
+	FORCEINLINE float GetStaminaPercent() const { return Stamina / MaxStamina; }
+	FORCEINLINE float GetStamina() const { return Stamina; }
 	FORCEINLINE int32 GetGold() const { return Gold; }
 	FORCEINLINE int32 GetSouls() const { return Souls; }
 	FORCEINLINE bool IsAlive() const { return Health > 0.0f; }	
