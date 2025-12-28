@@ -2,9 +2,7 @@
 
 
 #include "Items/Pickups/Treasure.h"
-
-#include "Characters/SlashCharacter.h"
-#include "Kismet/GameplayStatics.h"
+#include "Interfaces/Interactor.h"
 
 
 // Sets default values
@@ -21,17 +19,20 @@ void ATreasure::BeginPlay()
 	
 }
 
+
+
 void ATreasure::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (ASlashCharacter* OverlappingCharacter = Cast<ASlashCharacter>(OtherActor))
+	IInteractor* Interactor = Cast<IInteractor>(OtherActor);
+	if (Interactor)
 	{
-		if (PickupSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(this, PickupSound, GetActorLocation());
-		}
+		Interactor->PickupGold(this);
+		PlayPickupSound();
 		Destroy();
+		
 	}
+	
 	
 }
 

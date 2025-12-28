@@ -70,7 +70,6 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 	if (BoxHit.GetActor())
 	{ 
 		FString ActorName = BoxHit.GetActor()->GetName();
-		UE_LOG(LogTemp,Warning,TEXT("ActorName: %s"),*ActorName);
 		
 		UGameplayStatics::ApplyDamage(
 			BoxHit.GetActor(),

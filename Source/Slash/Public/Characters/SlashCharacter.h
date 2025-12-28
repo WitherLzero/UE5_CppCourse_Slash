@@ -58,6 +58,7 @@ protected:
 	virtual void SetOverlappingItem(AItem* NewItem) override;
 	virtual void OnEquip() override;
 	virtual void PickupSouls(ASoul* Soul) override;
+	virtual void PickupGold(ATreasure* Treasure) override;
 	/* </IInteractor> */
 
 

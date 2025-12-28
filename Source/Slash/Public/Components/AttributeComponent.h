@@ -28,8 +28,18 @@ private:
 	
 	UPROPERTY( EditAnywhere, Category = "Attributes")
 	float MaxHealth;
+	
+	UPROPERTY( EditAnywhere, Category = "Attributes")
+	int32 Gold;
+	
+	UPROPERTY( EditAnywhere, Category = "Attributes")
+	int32 Souls;
 public:
 	void ReceiveDamage(float Damage);
+	void AddGold(int32 Amount);
+	void AddSouls(int32 Number);
 	FORCEINLINE float GetHealthPercent() const { return Health / MaxHealth; }
+	FORCEINLINE int32 GetGold() const { return Gold; }
+	FORCEINLINE int32 GetSouls() const { return Souls; }
 	FORCEINLINE bool IsAlive() const { return Health > 0.0f; }	
 };

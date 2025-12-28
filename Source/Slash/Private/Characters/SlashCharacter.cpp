@@ -17,6 +17,8 @@
 #include "Animation/AnimMontage.h"
 #include "HUD/PlayerHUD.h"
 #include "HUD/PlayerOverlay.h"
+#include "Items/Pickups/Soul.h"
+#include "Items/Pickups/Treasure.h"
 #include "Items/Weapons/Weapon.h"
 
 // Sets default values
@@ -184,7 +186,20 @@ void ASlashCharacter::OnEquip()
 
 void ASlashCharacter::PickupSouls(ASoul* Soul)
 {
-	UE_LOG(LogTemp,Warning,TEXT("Pickup Souls."));
+	if (Attributes && UIOverlay)
+	{
+		Attributes->AddSouls(Soul->GetSouls());
+		UIOverlay->SetSoulText(Attributes->GetSouls());
+	}
+}
+
+void ASlashCharacter::PickupGold(ATreasure* Treasure)
+{
+	if (Attributes && UIOverlay)
+	{
+		Attributes->AddGold(Treasure->GetGold());
+		UIOverlay->SetCoinText(Attributes->GetGold());
+	}
 }
 
 /*
