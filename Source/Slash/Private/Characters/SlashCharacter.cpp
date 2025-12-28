@@ -92,6 +92,7 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EnhancedInputComponent->BindAction(JumpAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Jump);
 		EnhancedInputComponent->BindAction(InteractAction,ETriggerEvent::Started,this,&ASlashCharacter::EKeyPressed);
 		EnhancedInputComponent->BindAction(AttackAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Attack);
+		EnhancedInputComponent->BindAction(DodgeAction,ETriggerEvent::Triggered,this,&ASlashCharacter::Dodge);
 	}
 }
 
@@ -232,6 +233,14 @@ void ASlashCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void ASlashCharacter::Dodge()
+{
+	if (ActionState != EActionState::EAS_Unoccupied) return;
+	RotateToInputDirection();
+	PlayMontageSection(DodgeMontage,FName("Dodge"));
+	ActionState = EActionState::EAS_Dodging;
+}
+
 void ASlashCharacter::Jump()
 {
 	if (ActionState != EActionState::EAS_Unoccupied) return;
@@ -258,26 +267,18 @@ void ASlashCharacter::EquipWeapon()
 {
 	if (CanDisarm())
 	{
-		PlayEquipMontage(FName("Disarm"));
+		PlayMontageSection(EquipMontage,FName("Disarm"));
 		CharacterState = ECharacterState::ECS_Unequipped;
 		ActionState = EActionState::EAS_Arming;
 	}else if (CanArm())
 	{
-		PlayEquipMontage(FName("Arm"));
+		PlayMontageSection(EquipMontage,FName("Arm"));
 		CharacterState = ECharacterState::ECS_Equipped;
 		ActionState = EActionState::EAS_Arming;
 	}
 }
 
-void ASlashCharacter::PlayEquipMontage(FName SectionName)
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && EquipMontage)
-	{
-		AnimInstance->Montage_Play(EquipMontage);
-		AnimInstance->Montage_JumpToSection(SectionName);
-	}
-}
+
 
 /*
  * Anim Notifies
@@ -315,6 +316,11 @@ void ASlashCharacter::FinishArming()
 }
 
 void ASlashCharacter::HitReactEnd()
+{
+	ActionState = EActionState::EAS_Unoccupied;
+}
+
+void ASlashCharacter::DodgeEnd()
 {
 	ActionState = EActionState::EAS_Unoccupied;
 }

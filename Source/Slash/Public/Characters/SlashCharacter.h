@@ -65,12 +65,12 @@ protected:
 	/* Input Handlers */
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
+	void Dodge();
 	virtual void Jump() override;
 	void EKeyPressed();
 
 	/* Combat Handlers */
 	void EquipWeapon();
-	void PlayEquipMontage(FName SectionName);
 	
 	/* Anim Notifies */
 	UFUNCTION(BlueprintCallable)
@@ -91,6 +91,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void HitReactEnd();
 
+	UFUNCTION(BlueprintCallable)
+	void DodgeEnd();
+	
 	/*
 	 * Variables: Inputs
 	 */
@@ -106,6 +109,8 @@ protected:
 	UInputAction* InteractAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* AttackAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* DodgeAction;
 
 private:
 	/* Internal Helpers */
@@ -150,6 +155,10 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	UAnimMontage* EquipMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+	UAnimMontage* DodgeMontage;
+	
 	
 	int32 AttackIndex = 0;
 	bool bCanCombo = false;
