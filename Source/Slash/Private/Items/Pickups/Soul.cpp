@@ -30,9 +30,11 @@ void ASoul::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 	if (Interactor)
 	{
 		Interactor->PickupSouls(this);
-	}
-	SpawnPickupEffect();
-	PlayPickupSound();
+		
+		SpawnPickupEffect();
+		PlayPickupSound();
 	
-	Destroy();
+		Destroy();
+	}
+
 }

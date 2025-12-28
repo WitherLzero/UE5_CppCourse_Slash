@@ -29,11 +29,11 @@ private:
 	UPROPERTY( EditAnywhere, Category = "Attributes")
 	float MaxHealth;
 	
-	UPROPERTY( EditAnywhere, Category = "Attributes")
-	int32 Gold;
+	UPROPERTY( VisibleAnywhere, Category = "Attributes")
+	int32 Gold = 0;
 	
-	UPROPERTY( EditAnywhere, Category = "Attributes")
-	int32 Souls;
+	UPROPERTY( VisibleAnywhere, Category = "Attributes")
+	int32 Souls = 0;
 public:
 	void ReceiveDamage(float Damage);
 	void AddGold(int32 Amount);

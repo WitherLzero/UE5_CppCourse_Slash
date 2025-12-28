@@ -6,6 +6,7 @@
 #include "Framework/BaseCharacter.h"
 #include "Enemy.generated.h"
 
+class ASoul;
 class AAIController;
 class UPawnSensingComponent;
 class UHealthBarComponent;
@@ -84,8 +85,10 @@ private:
 	// Property
 	UPROPERTY(VisibleInstanceOnly)
 	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category= Properties)
 	TSubclassOf<AWeapon> WeaponClass;
+	UPROPERTY(EditAnywhere, Category= Properties)
+	TSubclassOf<ASoul> SoulClass;
 	// Components
 	UPROPERTY(VisibleAnywhere)
 	UHealthBarComponent* HealthBarComponent;
@@ -113,8 +116,11 @@ private:
 	float AttackMin = 0.5f;
 	UPROPERTY(EditInstanceOnly, Category = "Combat")
 	float AttackMax = 1.f;
+	UPROPERTY(EditInstanceOnly, Category = "Combat")
+	int32 SoulsReward = 5;
 	UPROPERTY(EditAnywhere,Category="Combat")
 	float DeathLifeSpan = 3.f;
+	
 	// Timers
 	FTimerHandle DeathTimer;
 	FTimerHandle PatrolTimer;

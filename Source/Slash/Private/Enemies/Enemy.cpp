@@ -12,6 +12,8 @@
 
 #include "AIController.h"
 #include "Animation/AnimMontage.h"
+#include "Items/Pickups/Soul.h"
+#include "Kismet/GameplayStatics.h"
 
 
 AEnemy::AEnemy()
@@ -116,6 +118,19 @@ void AEnemy::Die()
 	ClearTimer(AttackTimer);
 	ClearTimer(PatrolTimer);
 	ShowHealthBar(false);
+	
+	UWorld* World = GetWorld();
+	if (World && SoulClass && Attributes)
+	{
+		const FTransform SpawnTransform = FTransform(GetActorRotation(),GetActorLocation());
+		ASoul* SpawnedSoul = World->SpawnActorDeferred<ASoul>(SoulClass,SpawnTransform,this,this,ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+		
+		if (SpawnedSoul)
+		{
+			SpawnedSoul->SetSouls(this->SoulsReward);
+			UGameplayStatics::FinishSpawningActor(SpawnedSoul,SpawnTransform);
+		}
+	}
 }
 
 
